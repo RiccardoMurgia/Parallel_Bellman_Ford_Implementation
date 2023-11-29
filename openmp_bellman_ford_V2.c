@@ -1,5 +1,5 @@
 //
-// Created by rick on 25/11/23.
+// Created by rick on 28/11/23.
 //
 
 #include <stdlib.h>
@@ -7,27 +7,30 @@
 #include <string.h>
 
 #include "graph_generator.h"
-#include "openmp_bellman_ford_V1.h"
+#include "openmp_bellman_ford_V2.h"
 
 
 
-MinResult parallel_find_minValue(const int *array, int size) {
+MinResult parallel_find_min_value(const int *array, int size) {
     MinResult result;
     result.value = INT_MAX;
     result.index = -1;
 
-    for (int i = 0; i < size; i++) {
-        if (array[i] < result.value) {
-            result.value = array[i];
-            result.index = i;
+    #pragma omp declare reduction(MinResultMin: MinResult: omp_out = omp_in.value < omp_out.value ? omp_in : omp_out) initializer(omp_priv = {INT_MAX, -1})
+
+    #pragma omp parallel for default(none) firstprivate(array, size) reduction(MinResultMin: result)
+        for (int i = 0; i < size; i++) {
+            if (array[i] < result.value) {
+                result.value = array[i];
+                result.index = i;
+            }
         }
-    }
 
     return result;
 }
 
 
-int bellman_ford_v1(Graph* graph, int source, int* dist) {
+int bellman_ford_v2(Graph* graph, int source, int* dist) {
     int negative_cycle = 0;
     parallel_initialize_distances(dist, graph->num_vertices, source, graph->maximum_weight);
 
@@ -45,7 +48,7 @@ int bellman_ford_v1(Graph* graph, int source, int* dist) {
                 for (int u = 0; u < graph->num_vertices; u++)
                     candidate_dist[u] = dist[u] + graph->adjacency_matrix[u][v];
 
-                MinResult min_candidate_dist = parallel_find_minValue(candidate_dist, graph->num_vertices);
+                MinResult min_candidate_dist = parallel_find_min_value(candidate_dist, graph->num_vertices);
 
                 if (min_candidate_dist.value < dist[v]) {
                     new_dist[v] = min_candidate_dist.value;
@@ -58,25 +61,25 @@ int bellman_ford_v1(Graph* graph, int source, int* dist) {
             }
 
         #pragma omp single
-        {
-            memcpy(dist, new_dist, graph->num_vertices * sizeof(int));
-            memcpy(predecessor, new_predecessor, graph->num_vertices * sizeof(int));
+                {
+                    memcpy(dist, new_dist, graph->num_vertices * sizeof(int));
+                    memcpy(predecessor, new_predecessor, graph->num_vertices * sizeof(int));
 
-            free(new_dist);
-            free(new_predecessor);
+                    free(new_dist);
+                    free(new_predecessor);
 
-            new_dist = NULL;
-            new_predecessor = NULL;
-        }
+                    new_dist = NULL;
+                    new_predecessor = NULL;
+                }
     }
 
-        #pragma omp parallel for default(none) shared(graph, dist) firstprivate(source) reduction(+:negative_cycle)
-            for (int v = 0; v < graph->num_vertices; v++) {
-                for (int u = 0; u < graph->num_vertices; u++) {
-                    if (dist[u] + graph->adjacency_matrix[u][v] < dist[v])
-                        negative_cycle += 1;
-                }
+    #pragma omp parallel for default(none) shared(graph, dist) firstprivate(source) reduction(+:negative_cycle)
+        for (int v = 0; v < graph->num_vertices; v++) {
+            for (int u = 0; u < graph->num_vertices; u++) {
+                if (dist[u] + graph->adjacency_matrix[u][v] < dist[v])
+                    negative_cycle += 1;
             }
+        }
 
     free(predecessor);
 

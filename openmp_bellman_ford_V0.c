@@ -2,9 +2,10 @@
 // Created by rick on 25/11/23.
 //
 
-
 #include <limits.h>
+
 #include "graph_generator.h"
+
 
 
 void parallel_initialize_distances(int* distances, int numVertices, int source, int maximum_weight){

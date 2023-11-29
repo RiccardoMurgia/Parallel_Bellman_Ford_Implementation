@@ -4,9 +4,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "graph_generator.h"
 
-// Function to generate a complete undirected graph with random weights
+
+
 Graph generate_complete_undirected_graph(int numVertices, int lower_bound, int upper_bound) {
     Graph graph;
     graph.num_vertices = numVertices;
@@ -67,7 +69,7 @@ Graph generate_complete_undirected_graph(int numVertices, int lower_bound, int u
     return graph;
 }
 
-// Function to free allocated memory for a graph
+
 void free_graph(Graph* graph) {
     free(graph->nodes);
     free(graph->edges);
@@ -79,7 +81,7 @@ void free_graph(Graph* graph) {
     free(graph->adjacency_matrix);
 }
 
-// Function to print the graph as an adjacency list
+
 void print_graph_adjacency_list(Graph* graph) {
     printf("- Adjacency List:\n");
     for (int i = 0; i < graph->num_vertices; i++) {
@@ -96,7 +98,7 @@ void print_graph_adjacency_list(Graph* graph) {
 
 }
 
-// Function to print the graph as an adjacency matrix
+
 void print_graph_adjacency_matrix(Graph* graph) {
     printf("- Adjacency Matrix:\n");
     for (int i = 0; i < graph->num_vertices; i++) {

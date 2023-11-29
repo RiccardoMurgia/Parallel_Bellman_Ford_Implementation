@@ -4,26 +4,35 @@
 
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <omp.h>
 
-#include <stdlib.h>
+#include "utilities.h"
 #include "graph_generator.h"
-#include "serial_bellman_ford.h"
+#include "bellman_ford_Sq.h"
 #include "openmp_bellman_ford_V0.h"
 #include "openmp_bellman_ford_V1.h"
+#include "openmp_bellman_ford_V2.h"
+
 
 
 int main() {
-    unsigned int seed = 42;
-    srand(seed);
-    omp_set_num_threads(20);  // Imposta il numero di thread a 4
+    omp_set_num_threads(20);
 
-
-    int numVertices, lower_bound, upper_bound;
-    double start_time_serial, end_time_serial, start_time_v0, end_time_v0, start_time_v1, end_time_v1;
+    int graph_flag;
+    int solutions_flag;
+    int times_table_flag;
+    int statistics_table_flag;
 
     int source = 0;
 
+    int numVertices, lower_bound, upper_bound;
+    int number_of_test;
+
+    double start_time_serial, end_time_serial, start_time_v0, end_time_v0, start_time_v1, end_time_v1, start_time_v2, end_time_v2;
+
+    const char* versions[] = {"Sq","V0", "V1", "V2"};
+    int number_of_version_to_test = 4;
 
     // Input parameters
     printf("Enter the number of vertices: ");
@@ -35,91 +44,112 @@ int main() {
     printf("Enter the upper bound for random weights: ");
     scanf("%d", &upper_bound);
 
-    // Generate and print the graph
-    Graph myGraph = generate_complete_undirected_graph(numVertices, lower_bound, upper_bound);
+    printf("Enter number of tests: ");
+    scanf("%d", &number_of_test);
 
-    // Access the list of nodes in the main
-    printf("List of Nodes: ");
-    for (int i = 0; i < myGraph.num_vertices; i++) {
-        printf("%d ", myGraph.nodes[i]);
-    }
-    printf("\n");
+    printf("Enter 1 if you want see the generated graph 0 otherwise: ");
+    scanf("%d", &graph_flag);
 
-    // Print the adjacency list and matrix
-    print_graph_adjacency_list(&myGraph);
-    print_graph_adjacency_matrix(&myGraph);
+    printf("Enter 1 if you want the solutions and times for each version 0 otherwise: ");
+    scanf("%d", &solutions_flag);
 
-    int* distances_v0 = (int*)malloc(numVertices * sizeof(int));
-    int* distances_v1 = (int*)malloc(numVertices * sizeof(int));
-    int* distances_serial = (int*)malloc(numVertices * sizeof(int));
+    printf("Enter 1 if you want a summary time table 0 otherwise: ");
+    scanf("%d", &times_table_flag);
 
-    printf("======================================\n");
-    printf("Serial solution:\n");
-    printf("======================================\n");
+    printf(("Enter 1 if you want a statistic table 0 otherwise: "));
+    scanf("%d", &statistics_table_flag);
 
-    start_time_serial = omp_get_wtime();
-    int negative_cycles_bellman_ford_serial = bellman_ford_serial(&myGraph, source, distances_serial);
-    end_time_serial =  omp_get_wtime();
 
-    if (negative_cycles_bellman_ford_serial) {
-        printf("Negative cycle detected.\n");
-    }
-    else {
-        printf("Shortest distances from node %d:\n", source);
-        for (int i = 0; i < numVertices; i++) {
-            printf("To node %d: %d\n", i, distances_serial[i]);
+    double time_matrix[4][number_of_test];
+
+
+    for(int test_id = 0; test_id <  number_of_test; test_id++) {
+
+        int *distances_serial = (int *) malloc(numVertices * sizeof(int));
+        int *distances_v0 = (int *) malloc(numVertices * sizeof(int));
+        int *distances_v1 = (int *) malloc(numVertices * sizeof(int));
+        int *distances_v2 = (int *) malloc(numVertices * sizeof(int));
+
+
+        if(solutions_flag) {
+            for (int i = 0 ;i < 100;i++)
+                printf("_");
+            printf("\n");
+
+            printf("Test number: %d \n", test_id);
+
+            for (int i = 0 ;i < 100;i++)
+                printf("_");
+            printf("\n");
         }
-    }
 
-    printf("Bellman-Ford serial require: %f seconds\n\n", end_time_serial - start_time_serial);
+        //fix seed
+        srand(test_id);
 
-    printf("======================================\n");
-    printf("V0 solution:\n");
-    printf("======================================\n");
+        // Generate and print the graph
+        Graph myGraph = generate_complete_undirected_graph(numVertices, lower_bound, upper_bound);
 
-    start_time_v0 = omp_get_wtime();
-    int negative_cycles_bellman_ford_v0 = bellman_ford_v0(&myGraph, source, distances_v0);
-    end_time_v0 = omp_get_wtime();
+        // print the graph
+        if(graph_flag) {
+            printf("List of Nodes: ");
+            for (int i = 0; i < myGraph.num_vertices; i++) {
+                printf("%d ", myGraph.nodes[i]);
+            }
+            printf("\n");
 
-    if (negative_cycles_bellman_ford_v0) {
-        printf("Negative cycle detected.\n");
-    }
-    else {
-        printf("Shortest distances from node %d:\n", source);
-        for (int i = 0; i < numVertices; i++) {
-            printf("To node %d: %d\n", i, distances_v0[i]);
+            // Print the adjacency list and matrix
+            print_graph_adjacency_list(&myGraph);
+            print_graph_adjacency_matrix(&myGraph);
+
         }
-    }
-    printf("Bellman-Ford V0 require: %f seconds\n\n", end_time_v0 - start_time_v0);
 
-    printf("======================================\n");
-    printf("V1 solution:\n");
-    printf("======================================\n");
 
-    start_time_v1 = omp_get_wtime();
-    int negative_cycles_bellman_ford_v1 = bellman_ford_v1(&myGraph, source, distances_v1);
-    end_time_v1 = omp_get_wtime();
+        start_time_serial = omp_get_wtime();
+        int negative_cycles_bellman_ford_sq = bellman_ford_serial(&myGraph, source, distances_serial);
+        end_time_serial = omp_get_wtime();
+        time_matrix[0][test_id] = end_time_serial - start_time_serial;
 
-    if (negative_cycles_bellman_ford_v1) {
-        printf("Negative cycle detected.\n");
-    }
-    else {
-        printf("Shortest distances from node %d:\n", source);
-        for (int i = 0; i < numVertices; i++) {
-            printf("To node %d: %d\n", i, distances_v1[i]);
+
+        start_time_v0 = omp_get_wtime();
+        int negative_cycles_bellman_ford_v0 = bellman_ford_v0(&myGraph, source, distances_v0);
+        end_time_v0 = omp_get_wtime();
+        time_matrix[1][test_id] = end_time_v0 - start_time_v0;
+
+
+        start_time_v1 = omp_get_wtime();
+        int negative_cycles_bellman_ford_v1 = bellman_ford_v1(&myGraph, source, distances_v1);
+        end_time_v1 = omp_get_wtime();
+        time_matrix[2][test_id] = end_time_v1 - start_time_v1;
+
+
+        start_time_v2 = omp_get_wtime();
+        int negative_cycles_bellman_ford_v2 = bellman_ford_v2(&myGraph, source, distances_v2);
+        end_time_v2 = omp_get_wtime();
+        time_matrix[3][test_id] = end_time_v2 - start_time_v2;
+
+
+        if(solutions_flag) {
+            print_version_results("Sq", distances_serial, numVertices, source, negative_cycles_bellman_ford_sq, time_matrix[0][test_id]);
+            print_version_results("V0", distances_v0, numVertices, source, negative_cycles_bellman_ford_v0, time_matrix[1][test_id]);
+            print_version_results("V1", distances_v1, numVertices, source, negative_cycles_bellman_ford_v1, time_matrix[2][test_id]);
+            print_version_results("V2", distances_v2, numVertices, source, negative_cycles_bellman_ford_v2, time_matrix[3][test_id]);
         }
+
+
+        free(distances_serial);
+        free(distances_v0);
+        free(distances_v1);
+        free(distances_v2);
+        free_graph(&myGraph);
     }
 
-    printf("Bellman-Ford V1 require: %f seconds\n\n", end_time_v1 - start_time_v1);
 
+    if(times_table_flag)
+        print_time_matrix(versions, (double *) time_matrix, number_of_version_to_test, number_of_test);
 
-    // Free allocated memory
-    free(distances_serial);
-    free(distances_v0);
-    free(distances_v1);
+    if(statistics_table_flag)
+    print_statistics(versions, (double *) time_matrix, number_of_version_to_test, number_of_test);
 
-    // Free allocated memory
-    free_graph(&myGraph);
 
     return 0;
 }

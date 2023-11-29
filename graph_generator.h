@@ -5,6 +5,7 @@
 #ifndef GRAPH_GENERATOR_H
 #define GRAPH_GENERATOR_H
 
+
 typedef struct {
     int origin;
     int end;
