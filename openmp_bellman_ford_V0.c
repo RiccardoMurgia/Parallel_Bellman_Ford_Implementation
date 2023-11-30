@@ -3,7 +3,6 @@
 //
 
 #include <limits.h>
-
 #include "graph_generator.h"
 
 
@@ -22,8 +21,9 @@ void parallel_relax_edges(int* distances, Edge* edges, int numEdges) {
             int end = edges[i].end;
             int weight = edges[i].weight;
 
-            if (distances[origin] != INT_MAX && distances[origin] + weight < distances[end]) {
-                distances[end] = distances[origin] + weight;
+            if (distances[origin] + weight < distances[end]) {
+                #pragma omp critical
+                    distances[end] = distances[origin] + weight;
             }
         }
 }

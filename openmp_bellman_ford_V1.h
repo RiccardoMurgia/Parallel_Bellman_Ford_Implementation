@@ -10,7 +10,6 @@
 #include "openmp_bellman_ford_V0.h"
 
 
-
 typedef struct {
     int value;
     int index;

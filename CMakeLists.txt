@@ -1,22 +1,52 @@
+#[[
+gcc -c -fopenmp main.c -o main.o;
+gcc -c -fopenmp utilities.c -o utilities.o;
+gcc -c -fopenmp graph_generator.c -o graph_generator.o;
+gcc -c -fopenmp bellman_ford_Sq.c -o bellman_ford_Sq.o;
+gcc -c -fopenmp openmp_bellman_ford_V0.c -o openmp_bellman_ford_V0.o;
+gcc -c -fopenmp openmp_bellman_ford_V1.c -o openmp_bellman_ford_V1.o;
+gcc -c -fopenmp openmp_bellman_ford_V2.c -o openmp_bellman_ford_V2.o;
+nvcc -c cuda_version.cu -o cuda_version.o -arch=sm_80;
+gcc -fopenmp utilities.o graph_generator.o bellman_ford_Sq.o openmp_bellman_ford_V0.o openmp_bellman_ford_V1.o openmp_bellman_ford_V2.o cuda_version.o main.o -o executable -lm -L/opt/cuda/lib64 -lcudart
+]]
+
+
 cmake_minimum_required(VERSION 3.26)
-project(Parallel_Bellman_Ford_Implementation)
+project(Parallel_Bellman_Ford_Implementation C CUDA)
 
+# Setting cuda version
+set(CMAKE_CUDA_STANDARD 11)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+
+# Setting C version
 set(CMAKE_C_STANDARD 23)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
-add_executable(Parallel_Bellman_Ford_Implementation
-               main.c
-               openmp_bellman_ford_V0.c
-               graph_generator.c
-               openmp_bellman_ford_V1.c
-        bellman_ford_Sq.c
-               openmp_bellman_ford_V2.c
-               openmp_bellman_ford_V2.h
+# Adding source files
+set(SOURCES
         utilities.c
-        utilities.h)
+        graph_generator.c
+        bellman_ford_Sq.c
+        openmp_bellman_ford_V0.c
+        openmp_bellman_ford_V1.c
+        openmp_bellman_ford_V2.c
+        cuda_bellman_ford_V0.cu
+        main.c
+)
 
-find_package(OpenMP)
+# Adding compilation specifics
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=-fopenmp")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -arch=sm_80")
 
-if (OpenMP_CXX_FOUND)
-    target_compile_options(Parallel_Bellman_Ford_Implementation PRIVATE ${OpenMP_CXX_FLAGS})
-    target_link_libraries(Parallel_Bellman_Ford_Implementation PRIVATE ${OpenMP_CXX_LIBRARIES} m)
-endif()
+# Setting executable file
+add_executable(Parallel_Bellman_Ford_Implementation ${SOURCES})
+
+# Linking libraries
+find_package(OpenMP REQUIRED)
+target_link_libraries(Parallel_Bellman_Ford_Implementation PRIVATE OpenMP::OpenMP_C)
+target_link_libraries(Parallel_Bellman_Ford_Implementation PRIVATE m)
+target_link_libraries(Parallel_Bellman_Ford_Implementation PRIVATE cudart)
+
+# Specify CUDA libraries directory
+link_directories(/opt/cuda/lib64)

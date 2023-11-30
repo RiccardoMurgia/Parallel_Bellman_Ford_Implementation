@@ -14,10 +14,25 @@
 #include "openmp_bellman_ford_V1.h"
 #include "openmp_bellman_ford_V2.h"
 
+#include "cuda_bellman_ford_V0.cuh"
+
+
+int areArraysEqual(int *arr1, int *arr2, int size) {
+    for (int i = 0; i < size; ++i) {
+        if (arr1[i] != arr2[i]) {
+            return 0;  // Gli array non sono uguali
+        }
+    }
+    return 1;  // Gli array sono uguali
+}
+
 
 
 int main() {
     omp_set_num_threads(20);
+    helloCUDA();
+
+
 
     int graph_flag;
     int solutions_flag;
@@ -135,6 +150,8 @@ int main() {
             print_version_results("V2", distances_v2, numVertices, source, negative_cycles_bellman_ford_v2, time_matrix[3][test_id]);
         }
 
+        printf("porcodio %d\n",areArraysEqual(distances_serial, distances_v0,  numVertices));
+
 
         free(distances_serial);
         free(distances_v0);
@@ -149,6 +166,8 @@ int main() {
 
     if(statistics_table_flag)
     print_statistics(versions, (double *) time_matrix, number_of_version_to_test, number_of_test);
+
+
 
 
     return 0;
