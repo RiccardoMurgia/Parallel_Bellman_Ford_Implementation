@@ -30,11 +30,11 @@ set(SOURCES
         openmp_implementations/openmp_bellman_ford_V0.c
         openmp_implementations/openmp_bellman_ford_V1.c
         openmp_implementations/openmp_bellman_ford_V2.c
-        cuda_implementations/cuda_bellman_ford_V0.cu
-        main.c
-        openmp_implementations/openmp_utilities.c
-        cuda_implementations/cuda_utilities.cuh
         cuda_implementations/cuda_utilities.cu
+        openmp_implementations/openmp_utilities.c
+        cuda_implementations/cuda_bellman_ford_V0.cu
+        cuda_implementations/cuda_bellman_ford_V1.cu
+        main.c
 )
 
 # Adding compilation specifics

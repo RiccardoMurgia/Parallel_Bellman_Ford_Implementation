@@ -2,14 +2,13 @@
 // Created by rick on 28/11/23.
 //
 
-#include "stdio.h"
-#include <math.h>
+
 
 #include "general_utilities.h"
 
 
 
-double calculate_mean(int num_tests, const double times[num_tests]) {
+double calculate_mean(int num_tests, const double times[num_tests]){
     double sum = 0.0;
     for (int i = 0; i < num_tests; i++) {
         sum += times[i];
@@ -36,7 +35,7 @@ void print_version_results(const char *version_name, int *distances, int num_ver
     if (has_negative_cycle) {
         printf("Negative cycle detected.\n");
     }
-    else {
+    else{
         printf("Shortest distances from node %d:\n", source);
         for (int i = 0; i < num_vertices; i++)
             printf("To node %d: %d\n", i, distances[i]);
@@ -45,16 +44,16 @@ void print_version_results(const char *version_name, int *distances, int num_ver
 }
 
 
-void print_time_matrix(const char *versions[], double *time_matrix, int number_of_version, int number_of_test) {
+void print_time_matrix(const char *versions[], double *time_matrix, int number_of_version, int number_of_test){
     printf("%-15s ", "Version");
-    for (int j = 1; j <= number_of_test; j++) {
+    for (int j = 1; j <= number_of_test; j++){
         char test_label[10];
         sprintf(test_label, "test%d", j);
         printf("%-15s ", test_label);
     }
     printf("\n");
 
-    for (int i = 0; i < number_of_version; i++) {
+    for (int i = 0; i < number_of_version; i++){
         printf("%-15s ", versions[i]);
         for (int j = 0; j < number_of_test; j++)
             printf("%-15f ", time_matrix[i * number_of_test + j]);
@@ -64,10 +63,10 @@ void print_time_matrix(const char *versions[], double *time_matrix, int number_o
 }
 
 
-void print_statistics(const char *versions[], double time_matrix[], int number_of_version, int number_of_test) {
+void print_statistics(const char *versions[], double time_matrix[], int number_of_version, int number_of_test){
     printf("%-15s %-15s %-15s\n", "Version", "Mean", "Standard Deviation");
 
-    for (int i = 0; i < number_of_version; i++) {
+    for (int i = 0; i < number_of_version; i++){
         double mean = calculate_mean(number_of_test, &time_matrix[i * number_of_test]);
         double std_dev = calculate_std_dev(number_of_test, &time_matrix[i * number_of_test], mean);
 
@@ -76,7 +75,7 @@ void print_statistics(const char *versions[], double time_matrix[], int number_o
 }
 
 
-int areArraysEqual(const int *arr1, const int *arr2, int size) {
+int areArraysEqual(const int *arr1, const int *arr2, int size){
     for (int i = 0; i < size; ++i) {
         if (arr1[i] != arr2[i])
             return 0;

@@ -2,21 +2,17 @@
 // Created by rick on 25/11/23.
 //
 
-#include <stdlib.h>
-#include <limits.h>
-#include <string.h>
 
-#include "../graph_generator.h"
 #include "openmp_bellman_ford_V1.h"
 
 
 
-MinResult find_minValue(const int *array, int size) {
+MinResult find_minValue(const int *array, int size){
     MinResult result;
     result.value = INT_MAX;
     result.index = -1;
 
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++){
         if (array[i] < result.value) {
             result.value = array[i];
             result.index = i;
@@ -27,30 +23,31 @@ MinResult find_minValue(const int *array, int size) {
 }
 
 
-int bellman_ford_v1(Graph *graph, int source, int *dist) {
+int bellman_ford_v1(Graph *graph, int source, int *dist){
     int negative_cycle = 0;
     parallel_initialize_distances(dist, graph->num_vertices, source, graph->maximum_weight);
 
-    int *predecessor = (int *) malloc(graph->num_vertices * sizeof(int));
+    int *predecessor = (int*) malloc(graph->num_vertices * sizeof(int));
 
-    for (int i = 0; i < graph->num_vertices; i++) {
-        int *new_dist = (int *) malloc(graph->num_vertices * sizeof(int));
+    for (int i = 0; i < graph->num_vertices; i++){
+        int *new_dist = (int*) malloc(graph->num_vertices * sizeof(int));
         int *new_predecessor = (int *) malloc(graph->num_vertices * sizeof(int));
 
         #pragma omp parallel for default(none) shared(graph, dist, predecessor, new_dist, new_predecessor) firstprivate(source)
 
             for (int v = 0; v < graph->num_vertices; v++) {
-                int *candidate_dist = (int *) malloc(graph->num_vertices * sizeof(int));
+                int *candidate_dist = (int*) malloc(graph->num_vertices * sizeof(int));
 
                 for (int u = 0; u < graph->num_vertices; u++)
                     candidate_dist[u] = dist[u] + graph->adjacency_matrix[u][v];
 
                 MinResult min_candidate_dist = find_minValue(candidate_dist, graph->num_vertices);
 
-                if (min_candidate_dist.value < dist[v]) {
+                if (min_candidate_dist.value < dist[v]){
                     new_dist[v] = min_candidate_dist.value;
                     new_predecessor[v] = min_candidate_dist.index;
-                } else {
+                }
+                else {
                     new_dist[v] = dist[v];
                     new_predecessor[v] = predecessor[v];
                 }

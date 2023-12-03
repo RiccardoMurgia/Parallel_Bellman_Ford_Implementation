@@ -2,22 +2,20 @@
 // Created by rick on 25/11/23.
 //
 
-#include <stdio.h>
-#include <stdlib.h>
 
 #include "graph_generator.h"
 
 
 
-Graph generate_complete_undirected_graph(int num_vertices, int lower_bound, int upper_bound) {
+Graph generate_complete_undirected_graph(int num_vertices, int lower_bound, int upper_bound){
     Graph graph;
     graph.num_vertices = num_vertices;
     graph.num_edges = num_vertices * (num_vertices - 1);
 
     graph.nodes = (int*)malloc(num_vertices * sizeof(int));
-    for (int i = 0; i < num_vertices; i++) {
+    for (int i = 0; i < num_vertices; i++)
         graph.nodes[i] = i;
-    }
+
 
     graph.edges = (Edge*)malloc(num_vertices * (num_vertices - 1) * sizeof(Edge));
 
@@ -30,8 +28,8 @@ Graph generate_complete_undirected_graph(int num_vertices, int lower_bound, int 
 
     int edgeCount = 0;
 
-    for (int i = 0; i < num_vertices; i++) {
-        for (int j = i + 1; j < num_vertices; j++) {
+    for (int i = 0; i < num_vertices; i++){
+        for (int j = i + 1; j < num_vertices; j++){
             int weight_ij = rand() % (upper_bound - lower_bound + 1) + lower_bound;
             int weight_ji = rand() % (upper_bound - lower_bound + 1) + lower_bound;
 
@@ -61,19 +59,18 @@ Graph generate_complete_undirected_graph(int num_vertices, int lower_bound, int 
 }
 
 
-void free_graph(Graph* graph) {
+void free_graph(Graph* graph){
     free(graph->nodes);
     free(graph->edges);
 
-    // Free memory for adjacency matrix
-    for (int i = 0; i < graph->num_vertices; i++) {
+    for (int i = 0; i < graph->num_vertices; i++){
         free(graph->adjacency_matrix[i]);
     }
     free(graph->adjacency_matrix);
 }
 
 
-void print_graph_adjacency_list(Graph* graph) {
+void print_graph_adjacency_list(Graph *graph){
     printf("- Adjacency List:\n");
     for (int i = 0; i < graph->num_vertices; i++) {
         printf("%d: ", graph->nodes[i]);
@@ -90,9 +87,9 @@ void print_graph_adjacency_list(Graph* graph) {
 }
 
 
-void print_graph_adjacency_matrix(Graph* graph) {
+void print_graph_adjacency_matrix(Graph *graph){
     printf("- Adjacency Matrix:\n");
-    for (int i = 0; i < graph->num_vertices; i++) {
+    for (int i = 0; i < graph->num_vertices; i++){
         for (int j = 0; j < graph->num_vertices; j++)
             printf("%d ", graph->adjacency_matrix[i][j]);
 

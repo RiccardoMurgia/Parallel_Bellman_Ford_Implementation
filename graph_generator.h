@@ -2,8 +2,13 @@
 // Created by rick on 25/11/23.
 //
 
+
 #ifndef GRAPH_GENERATOR_H
 #define GRAPH_GENERATOR_H
+
+
+#include <stdio.h>
+#include <stdlib.h>
 
 
 
@@ -27,5 +32,6 @@ Graph generate_complete_undirected_graph(int num_vertices, int lower_bound, int 
 void free_graph(Graph *graph);
 void print_graph_adjacency_list(Graph *graph);
 void print_graph_adjacency_matrix(Graph *graph);
+
 
 #endif

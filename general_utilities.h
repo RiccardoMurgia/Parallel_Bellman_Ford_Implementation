@@ -2,8 +2,14 @@
 // Created by rick on 28/11/23.
 //
 
+
 #ifndef PARALLEL_BELLMAN_FORD_IMPLEMENTATION_GENERAL_UTILITIES_H
 #define PARALLEL_BELLMAN_FORD_IMPLEMENTATION_GENERAL_UTILITIES_H
+
+
+#include "stdio.h"
+#include <math.h>
+
 
 
 double calculate_mean(int num_tests, const double times[num_tests]);
@@ -15,4 +21,3 @@ int areArraysEqual(const int *arr1, const int *arr2, int size);
 
 
 #endif
-
