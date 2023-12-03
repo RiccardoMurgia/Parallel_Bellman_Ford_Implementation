@@ -9,30 +9,29 @@
 
 
 
-Graph generate_complete_undirected_graph(int numVertices, int lower_bound, int upper_bound) {
+Graph generate_complete_undirected_graph(int num_vertices, int lower_bound, int upper_bound) {
     Graph graph;
-    graph.num_vertices = numVertices;
-    graph.num_edges = numVertices * (numVertices - 1);
+    graph.num_vertices = num_vertices;
+    graph.num_edges = num_vertices * (num_vertices - 1);
 
-    graph.nodes = (int*)malloc(numVertices * sizeof(int));
-    for (int i = 0; i < numVertices; i++) {
+    graph.nodes = (int*)malloc(num_vertices * sizeof(int));
+    for (int i = 0; i < num_vertices; i++) {
         graph.nodes[i] = i;
     }
 
-    graph.edges = (Edge*)malloc(numVertices * (numVertices - 1) * sizeof(Edge));
+    graph.edges = (Edge*)malloc(num_vertices * (num_vertices - 1) * sizeof(Edge));
 
-    graph.adjacency_matrix = (int**)malloc(numVertices * sizeof(int*));
-    for (int i = 0; i < numVertices; i++) {
-        graph.adjacency_matrix[i] = (int*)malloc(numVertices * sizeof(int));
-        for (int j = 0; j < numVertices; j++) {
+    graph.adjacency_matrix = (int**)malloc(num_vertices * sizeof(int*));
+    for (int i = 0; i < num_vertices; i++) {
+        graph.adjacency_matrix[i] = (int*)malloc(num_vertices * sizeof(int));
+        for (int j = 0; j < num_vertices; j++)
             graph.adjacency_matrix[i][j] = 0;
-        }
     }
 
     int edgeCount = 0;
 
-    for (int i = 0; i < numVertices; i++) {
-        for (int j = i + 1; j < numVertices; j++) {
+    for (int i = 0; i < num_vertices; i++) {
+        for (int j = i + 1; j < num_vertices; j++) {
             int weight_ij = rand() % (upper_bound - lower_bound + 1) + lower_bound;
             int weight_ji = rand() % (upper_bound - lower_bound + 1) + lower_bound;
 
@@ -51,12 +50,10 @@ Graph generate_complete_undirected_graph(int numVertices, int lower_bound, int u
             graph.edges[edgeCount].weight = weight_ji;
             graph.adjacency_matrix[j][i] = weight_ji;
 
-            if (weight_ji > graph.maximum_weight) {
+            if (weight_ji > graph.maximum_weight)
                 graph.maximum_weight = weight_ji;
-            }
 
             edgeCount++;
-
         }
     }
 
@@ -82,10 +79,10 @@ void print_graph_adjacency_list(Graph* graph) {
         printf("%d: ", graph->nodes[i]);
 
         for (int j = 0; j < graph->num_vertices; j++) {
-            if (graph->adjacency_matrix[i][j] != 0) {
+            if (graph->adjacency_matrix[i][j] != 0)
                 printf("(%d, %d, %d) ", i, j, graph->adjacency_matrix[i][j]);
-            }
         }
+
         printf("\n");
     }
     printf("The graph has %d edges\n\n", graph->num_edges);
@@ -96,9 +93,9 @@ void print_graph_adjacency_list(Graph* graph) {
 void print_graph_adjacency_matrix(Graph* graph) {
     printf("- Adjacency Matrix:\n");
     for (int i = 0; i < graph->num_vertices; i++) {
-        for (int j = 0; j < graph->num_vertices; j++) {
+        for (int j = 0; j < graph->num_vertices; j++)
             printf("%d ", graph->adjacency_matrix[i][j]);
-        }
+
         printf("\n");
     }
     printf("\n");

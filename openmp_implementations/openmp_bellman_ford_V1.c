@@ -6,7 +6,7 @@
 #include <limits.h>
 #include <string.h>
 
-#include "graph_generator.h"
+#include "../graph_generator.h"
 #include "openmp_bellman_ford_V1.h"
 
 
@@ -27,7 +27,7 @@ MinResult find_minValue(const int *array, int size) {
 }
 
 
-int bellman_ford_v1(Graph* graph, int source, int* dist) {
+int bellman_ford_v1(Graph *graph, int source, int *dist) {
     int negative_cycle = 0;
     parallel_initialize_distances(dist, graph->num_vertices, source, graph->maximum_weight);
 
@@ -81,5 +81,4 @@ int bellman_ford_v1(Graph* graph, int source, int* dist) {
     free(predecessor);
 
     return negative_cycle;
-
 }

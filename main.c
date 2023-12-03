@@ -7,14 +7,14 @@
 #include <stdlib.h>
 #include <omp.h>
 
-#include "utilities.h"
+#include "general_utilities.h"
 #include "graph_generator.h"
 #include "bellman_ford_Sq.h"
-#include "openmp_bellman_ford_V0.h"
-#include "openmp_bellman_ford_V1.h"
-#include "openmp_bellman_ford_V2.h"
+#include "openmp_implementations/openmp_bellman_ford_V0.h"
+#include "openmp_implementations/openmp_bellman_ford_V1.h"
+#include "openmp_implementations/openmp_bellman_ford_V2.h"
 
-#include "cuda_bellman_ford_V0.cuh"
+#include "cuda_implementations/cuda_bellman_ford_V0.cuh"
 
 
 
@@ -137,7 +137,7 @@ int main() {
 
 
         cuda_start_time_v0 = omp_get_wtime();
-        int cuda_negative_cycles_bellman_ford_v0 = cuda_bellman_ford_v0(&myGraph, source, cuda_distances_v0, 1); //10fixme segmentation fault
+        int cuda_negative_cycles_bellman_ford_v0 = cuda_bellman_ford_v0(&myGraph, source, cuda_distances_v0, 100);
         cuda_end_time_v0 = omp_get_wtime();
         time_matrix[4][test_id] = cuda_end_time_v0 - cuda_start_time_v0;
 

@@ -3,23 +3,7 @@
 //
 
 #include <cstdio>
-#include "graph_generator.h"
-
-
-
-__global__ void link_graph_device_pointers(Graph *d_graph, int *d_nodes, Edge *d_edges, int **d_adjacency_matrix) {
-    d_graph->nodes = d_nodes;
-    d_graph->edges = d_edges;
-    d_graph->adjacency_matrix = d_adjacency_matrix;
-}
-
-
-
-__global__ void get_graph_device_pointers(Graph *d_graph, int **nodes, Edge **edges, int ***adjacency_matrix) {
-    *nodes = d_graph->nodes;
-    *edges = d_graph->edges;
-    *adjacency_matrix = d_graph->adjacency_matrix;
-}
+#include "cuda_bellman_ford_V0.cuh"
 
 
 
@@ -37,16 +21,12 @@ __global__ void cuda_parallel_relax_edges(int *d_distances, Graph *d_graph){
     unsigned int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
     if (tid < d_graph->num_edges) {
-
         int origin = d_graph->edges[tid].origin;
         int end = d_graph->edges[tid].end;
         int weight = d_graph->edges[tid].weight;
-        //printf("(%d, %d, %d)", origin, end, weight);
 
-        if (d_distances[origin] + weight < d_distances[end]) {
+        if (d_distances[origin] + weight < d_distances[end])
             atomicMin(&d_distances[end], d_distances[origin] + weight);
-        }
-
     }
 }
 
@@ -54,9 +34,8 @@ __global__ void cuda_parallel_relax_edges(int *d_distances, Graph *d_graph){
 
 void copy_edge_list_2_GPU(Edge **d_edges, Edge *h_edges, int num_edges){
     cudaMalloc((void **) d_edges, sizeof(Edge) * num_edges);
-    for (int i=0 ; i<num_edges; i++) {
+    for (int i=0 ; i<num_edges; i++)
         cudaMemcpy(&(*d_edges)[i], &h_edges[i], sizeof(Edge), cudaMemcpyHostToDevice);
-    }
 }
 
 
@@ -87,7 +66,7 @@ int** copy_graph_2_GPU(Graph *h_graph, Graph* d_graph) {
     cudaMemcpy(d_nodes, h_graph->nodes, sizeof(int) * h_graph->num_vertices, cudaMemcpyHostToDevice);
 
     copy_edge_list_2_GPU(&d_edges, h_graph->edges, h_graph->num_edges);
-    int** gpu_row_ptr_2_free = copy_adjacency_matrix_2_GPU(h_graph->adjacency_matrix,
+    int **gpu_row_ptr_2_free = copy_adjacency_matrix_2_GPU(h_graph->adjacency_matrix,
                                                            &d_adjacency_matrix,
                                                            h_graph->num_vertices,
                                                            h_graph->num_vertices);
@@ -98,12 +77,11 @@ int** copy_graph_2_GPU(Graph *h_graph, Graph* d_graph) {
     cudaDeviceSynchronize();
 
     return gpu_row_ptr_2_free;
-
 }
 
 
 
-void freeGraph(Graph *d_graph, int**gpu_pointers_to_free, int num_vertices) {
+void freeGraph(Graph *d_graph, int **gpu_pointers_to_free, int num_vertices) {
     int* nodes;
     Edge* edges;
     int** adjacency_matrix;
@@ -161,13 +139,11 @@ extern "C" int cuda_bellman_ford_v0(Graph *graph, int source, int *distances, in
          int end = graph->edges[i].end;
          int weight = graph->edges[i].weight;
 
-         if (distances[origin] + weight < distances[end]) {
+         if (distances[origin] + weight < distances[end])
              return 1;
-         }
      }
 
     return 0;
-
 }
 
 

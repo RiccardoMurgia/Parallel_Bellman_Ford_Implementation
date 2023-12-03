@@ -6,7 +6,7 @@
 #include <limits.h>
 #include <string.h>
 
-#include "graph_generator.h"
+#include "../graph_generator.h"
 #include "openmp_bellman_ford_V2.h"
 
 
@@ -84,5 +84,4 @@ int bellman_ford_v2(Graph* graph, int source, int* dist) {
     free(predecessor);
 
     return negative_cycle;
-
 }

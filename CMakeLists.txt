@@ -24,14 +24,17 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # Adding source files
 set(SOURCES
-        utilities.c
+        general_utilities.c
         graph_generator.c
         bellman_ford_Sq.c
-        openmp_bellman_ford_V0.c
-        openmp_bellman_ford_V1.c
-        openmp_bellman_ford_V2.c
-        cuda_bellman_ford_V0.cu
+        openmp_implementations/openmp_bellman_ford_V0.c
+        openmp_implementations/openmp_bellman_ford_V1.c
+        openmp_implementations/openmp_bellman_ford_V2.c
+        cuda_implementations/cuda_bellman_ford_V0.cu
         main.c
+        openmp_implementations/openmp_utilities.c
+        cuda_implementations/cuda_utilities.cuh
+        cuda_implementations/cuda_utilities.cu
 )
 
 # Adding compilation specifics
