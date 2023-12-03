@@ -11,7 +11,7 @@
 
 
 
-MinResult parallel_find_minValue(const int *array, int size) {
+MinResult find_minValue(const int *array, int size) {
     MinResult result;
     result.value = INT_MAX;
     result.index = -1;
@@ -45,7 +45,7 @@ int bellman_ford_v1(Graph* graph, int source, int* dist) {
                 for (int u = 0; u < graph->num_vertices; u++)
                     candidate_dist[u] = dist[u] + graph->adjacency_matrix[u][v];
 
-                MinResult min_candidate_dist = parallel_find_minValue(candidate_dist, graph->num_vertices);
+                MinResult min_candidate_dist = find_minValue(candidate_dist, graph->num_vertices);
 
                 if (min_candidate_dist.value < dist[v]) {
                     new_dist[v] = min_candidate_dist.value;

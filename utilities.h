@@ -11,6 +11,7 @@ double calculate_std_dev(int num_tests, const double times[num_tests], double me
 void print_version_results(const char* version_name, int* distances, int numVertices, int source, int has_negative_cycle, double execution_time);
 void print_time_matrix(const char* versions[], double time_matrix[], int number_of_version, int number_of_test);
 void print_statistics(const char* versions[], double time_matrix[], int number_of_version, int number_of_test);
+int areArraysEqual(int *arr1, int *arr2, int size);
 
 
 #endif

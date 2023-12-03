@@ -76,3 +76,13 @@ void print_statistics(const char* versions[], double time_matrix[], int number_o
         printf("%-15s %-15f %-15f\n", versions[i], mean, std_dev);
     }
 }
+
+
+int areArraysEqual(int *arr1, int *arr2, int size) {
+    for (int i = 0; i < size; ++i) {
+        if (arr1[i] != arr2[i]) {
+            return 0;  // Gli array non sono uguali
+        }
+    }
+    return 1;  // Gli array sono uguali
+}

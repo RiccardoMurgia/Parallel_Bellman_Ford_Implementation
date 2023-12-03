@@ -14,33 +14,28 @@ Graph generate_complete_undirected_graph(int numVertices, int lower_bound, int u
     graph.num_vertices = numVertices;
     graph.num_edges = numVertices * (numVertices - 1);
 
-    // Allocate memory for nodes
     graph.nodes = (int*)malloc(numVertices * sizeof(int));
     for (int i = 0; i < numVertices; i++) {
         graph.nodes[i] = i;
     }
 
-    // Allocate memory for edges
     graph.edges = (Edge*)malloc(numVertices * (numVertices - 1) * sizeof(Edge));
 
-    // Allocate memory for adjacency matrix
     graph.adjacency_matrix = (int**)malloc(numVertices * sizeof(int*));
     for (int i = 0; i < numVertices; i++) {
         graph.adjacency_matrix[i] = (int*)malloc(numVertices * sizeof(int));
         for (int j = 0; j < numVertices; j++) {
-            graph.adjacency_matrix[i][j] = 0;  // Initialize to 0
+            graph.adjacency_matrix[i][j] = 0;
         }
     }
 
     int edgeCount = 0;
 
-    // Add edges to create a complete graph
     for (int i = 0; i < numVertices; i++) {
         for (int j = i + 1; j < numVertices; j++) {
             int weight_ij = rand() % (upper_bound - lower_bound + 1) + lower_bound;
             int weight_ji = rand() % (upper_bound - lower_bound + 1) + lower_bound;
 
-            // Add edge (i, j)
             graph.edges[edgeCount].origin = i;
             graph.edges[edgeCount].end = j;
             graph.edges[edgeCount].weight = weight_ij;
@@ -51,7 +46,6 @@ Graph generate_complete_undirected_graph(int numVertices, int lower_bound, int u
 
             edgeCount++;
 
-            // Add edge (j, i)
             graph.edges[edgeCount].origin = j;
             graph.edges[edgeCount].end = i;
             graph.edges[edgeCount].weight = weight_ji;
