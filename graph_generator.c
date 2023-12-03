@@ -13,14 +13,14 @@ Graph generate_complete_undirected_graph(int num_vertices, int lower_bound, int 
     graph.num_edges = num_vertices * (num_vertices - 1);
 
     graph.nodes = (int*)malloc(num_vertices * sizeof(int));
+    graph.edges = (Edge*)malloc(num_vertices * (num_vertices - 1) * sizeof(Edge));
+    graph.adjacency_matrix = (int**)malloc(num_vertices * sizeof(int*));
+
     for (int i = 0; i < num_vertices; i++)
         graph.nodes[i] = i;
 
 
-    graph.edges = (Edge*)malloc(num_vertices * (num_vertices - 1) * sizeof(Edge));
-
-    graph.adjacency_matrix = (int**)malloc(num_vertices * sizeof(int*));
-    for (int i = 0; i < num_vertices; i++) {
+    for (int i = 0; i < num_vertices; i++){
         graph.adjacency_matrix[i] = (int*)malloc(num_vertices * sizeof(int));
         for (int j = 0; j < num_vertices; j++)
             graph.adjacency_matrix[i][j] = 0;
@@ -72,10 +72,10 @@ void free_graph(Graph* graph){
 
 void print_graph_adjacency_list(Graph *graph){
     printf("- Adjacency List:\n");
-    for (int i = 0; i < graph->num_vertices; i++) {
+    for (int i = 0; i < graph->num_vertices; i++){
         printf("%d: ", graph->nodes[i]);
 
-        for (int j = 0; j < graph->num_vertices; j++) {
+        for (int j = 0; j < graph->num_vertices; j++){
             if (graph->adjacency_matrix[i][j] != 0)
                 printf("(%d, %d, %d) ", i, j, graph->adjacency_matrix[i][j]);
         }

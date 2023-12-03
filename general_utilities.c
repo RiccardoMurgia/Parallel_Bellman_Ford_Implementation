@@ -10,14 +10,14 @@
 
 double calculate_mean(int num_tests, const double times[num_tests]){
     double sum = 0.0;
-    for (int i = 0; i < num_tests; i++) {
+    for (int i = 0; i < num_tests; i++){
         sum += times[i];
     }
     return sum / num_tests;
 }
 
 
-double calculate_std_dev(int num_tests, const double times[num_tests], double mean) {
+double calculate_std_dev(int num_tests, const double times[num_tests], double mean){
     double sum_squared_diff = 0.0;
     for (int i = 0; i < num_tests; i++) {
         double diff = times[i] - mean;
@@ -27,12 +27,12 @@ double calculate_std_dev(int num_tests, const double times[num_tests], double me
 }
 
 
-void print_version_results(const char *version_name, int *distances, int num_vertices, int source, int has_negative_cycle, double execution_time) {
+void print_version_results(const char *version_name, int *distances, int num_vertices, int source, int has_negative_cycle, double execution_time){
     printf("======================================\n");
     printf("%s solution:\n", version_name);
     printf("======================================\n");
 
-    if (has_negative_cycle) {
+    if (has_negative_cycle){
         printf("Negative cycle detected.\n");
     }
     else{
@@ -76,7 +76,7 @@ void print_statistics(const char *versions[], double time_matrix[], int number_o
 
 
 int areArraysEqual(const int *arr1, const int *arr2, int size){
-    for (int i = 0; i < size; ++i) {
+    for (int i = 0; i < size; ++i){
         if (arr1[i] != arr2[i])
             return 0;
     }

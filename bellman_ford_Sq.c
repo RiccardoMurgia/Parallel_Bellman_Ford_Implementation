@@ -14,7 +14,7 @@ void initialize_distances(int *distances, int num_vertices, int source, int maxi
 
 
 void serial_relax_edges(int *distances, Edge *edges, int num_edges){
-    for (int i = 0; i < num_edges; i++) {
+    for (int i = 0; i < num_edges; i++){
         int origin = edges[i].origin;
         int end = edges[i].end;
         int weight = edges[i].weight;
