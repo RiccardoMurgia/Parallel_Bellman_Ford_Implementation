@@ -3,7 +3,6 @@
 //
 
 
-
 #include "general_utilities.h"
 
 
@@ -81,4 +80,29 @@ int areArraysEqual(const int *arr1, const int *arr2, int size){
             return 0;
     }
     return 1;
+}
+
+
+
+void check_differences(const int *serial, int **distances, const char **versions, int numArrays, int length){
+    bool *are_equal_flags = (bool*)malloc(numArrays * sizeof(bool));
+
+    for (int i = 0; i < numArrays; i++)
+        are_equal_flags[i] = false;
+
+    for (int i = 0; i < numArrays; i++){
+        for (int j = 0; j < length; j++){
+            if (serial[j] != distances[i][j]){
+                are_equal_flags[i] = true;
+                break;
+            }
+        }
+    }
+
+    for (int i = 0; i < numArrays; i++){
+        if (are_equal_flags[i])
+            printf("------------------------------------------->ERROR: The Version %s is different from Sequential Version.\n\n", versions[i+1]);
+    }
+
+    free(are_equal_flags);
 }

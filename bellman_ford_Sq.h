@@ -14,7 +14,7 @@
 
 
 void initialize_distances(int *distances, int num_vertices, int source, int maximum_weight);
-void serial_relax_edges(int *distances, Edge *edges, int num_edges);
+void serial_relax_edges(int *distances, Edge *edges, int num_edges, int num_vertices);
 int bellman_ford_serial(Graph *graph, int source, int *distances);
 
 

@@ -8,11 +8,10 @@
 
 
 #include "../graph_generator.h"
+#include "openmp_utilities.h"
 
 
-
-void parallel_initialize_distances(int *distances, int num_vertices, int source, int maximum_weight);
-void parallel_relax_edges(int *distances, Edge *edges, int num_edges);
+void parallel_relax_edges_0(int *distances, Edge *edges, int num_edges);
 int bellman_ford_v0(Graph *graph, int source, int *distances);
 
 

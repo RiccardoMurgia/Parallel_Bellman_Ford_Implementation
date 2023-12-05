@@ -6,28 +6,10 @@
 #include "openmp_bellman_ford_V2.h"
 
 
-MinResult parallel_find_min_value(const int *array, int size){
-    MinResult result;
-    result.value = INT_MAX;
-    result.index = -1;
-
-    #pragma omp declare reduction(MinResultMin: MinResult: omp_out = omp_in.value < omp_out.value ? omp_in : omp_out) initializer(omp_priv = {INT_MAX, -1})
-
-    #pragma omp parallel for default(none) firstprivate(array, size) reduction(MinResultMin: result)
-        for (int i = 0; i < size; i++){
-            if (array[i] < result.value){
-                result.value = array[i];
-                result.index = i;
-            }
-        }
-
-    return result;
-}
-
 
 int bellman_ford_v2(Graph *graph, int source, int *dist){
     int negative_cycle = 0;
-    parallel_initialize_distances(dist, graph->num_vertices, source, graph->maximum_weight);
+    parallel_initialize_distances_0(dist, graph->num_vertices, source, graph->maximum_weight);
 
     int *predecessor = (int*) malloc(graph->num_vertices * sizeof(int));
 
@@ -43,7 +25,7 @@ int bellman_ford_v2(Graph *graph, int source, int *dist){
                 for (int u = 0; u < graph->num_vertices; u++)
                     candidate_dist[u] = dist[u] + graph->adjacency_matrix[u][v];
 
-                MinResult min_candidate_dist = parallel_find_min_value(candidate_dist, graph->num_vertices);
+                MinResult min_candidate_dist = parallel_find_min_value_0(candidate_dist, graph->num_vertices);
 
                 if (min_candidate_dist.value < dist[v]){
                     new_dist[v] = min_candidate_dist.value;

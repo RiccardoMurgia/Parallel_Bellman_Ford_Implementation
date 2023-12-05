@@ -76,7 +76,7 @@ void print_graph_adjacency_list(Graph *graph){
         printf("%d: ", graph->nodes[i]);
 
         for (int j = 0; j < graph->num_vertices; j++){
-            if (graph->adjacency_matrix[i][j] != 0)
+            if (i != j)
                 printf("(%d, %d, %d) ", i, j, graph->adjacency_matrix[i][j]);
         }
 

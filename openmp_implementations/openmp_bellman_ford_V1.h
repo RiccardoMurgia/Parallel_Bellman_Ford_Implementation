@@ -6,6 +6,7 @@
 #ifndef OPENMP_BELLMAN_FORD_V1_H
 #define OPENMP_BELLMAN_FORD_V1_H
 
+
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
@@ -15,7 +16,6 @@
 
 
 
-MinResult find_minValue(const int *array, int size);
 int bellman_ford_v1(Graph *graph, int source, int *dist);
 
 

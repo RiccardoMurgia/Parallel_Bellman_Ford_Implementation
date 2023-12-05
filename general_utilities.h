@@ -8,6 +8,7 @@
 
 
 #include "stdio.h"
+#include <stdlib.h>
 #include <math.h>
 
 
@@ -18,6 +19,6 @@ void print_version_results(const char *version_name, int *distances, int num_ver
 void print_time_matrix(const char *versions[], double time_matrix[], int number_of_version, int number_of_test);
 void print_statistics(const char *versions[], double time_matrix[], int number_of_version, int number_of_test);
 int areArraysEqual(const int *arr1, const int *arr2, int size);
-
+void check_differences(const int *serial, int **distances, const char **versions, int numArrays, int length);
 
 #endif

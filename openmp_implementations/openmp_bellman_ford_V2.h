@@ -15,7 +15,6 @@
 #include "openmp_utilities.h"
 
 
-MinResult parallel_find_min_value(const int *array, int size);
 int bellman_ford_v2(Graph *graph, int source, int *dist);
 
 
