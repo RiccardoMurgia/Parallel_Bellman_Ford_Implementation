@@ -3,6 +3,7 @@
 //
 
 
+#include <iostream>
 #include "cuda_utilities.cuh"
 
 
@@ -18,15 +19,14 @@ __global__ void get_graph_device_pointers(Graph *d_graph, int **nodes, Edge **ed
     *nodes = d_graph->nodes;
     *edges = d_graph->edges;
     *adjacency_matrix = d_graph->adjacency_matrix;
+
 }
 
 
 __global__ void cuda_initialize_distances(int *d_dist, Graph *d_graph, const int *d_source){
     unsigned int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
-    if (tid < d_graph->num_vertices){     //dal secondo test in poi d graph è un puntaore null
+    if (tid < d_graph->num_vertices)
         d_dist[tid] = (tid == *d_source) ? 0 : INT_MAX - d_graph->maximum_weight;
-        //printf("dist[%d]: %d\n", tid, d_dist[tid]);
-    }
 
 }
 
@@ -51,6 +51,7 @@ int** copy_adjacency_matrix_2_GPU(int **hostMatrix, int ***deviceMatrix, int num
     }
 
     return gpu_pointers_to_free;
+
 }
 
 
@@ -78,18 +79,24 @@ int** copy_graph_2_GPU(Graph *h_graph, Graph *d_graph) {
 
 
 void freeGraph(Graph *d_graph, int**gpu_pointers_to_free, int num_vertices) {
-    int *nodes;
-    Edge *edges;
-    int **adjacency_matrix;
+    int **nodes = nullptr;
+    Edge **edges = nullptr;
+    int ***adjacency_matrix = nullptr;
 
-    get_graph_device_pointers<<<1, 1>>>(d_graph, &nodes, &edges, &adjacency_matrix);
+    cudaMallocManaged((void**) &nodes,  sizeof(int*));
+    cudaMallocManaged((void**) &edges,  sizeof(Edge*));
+    cudaMallocManaged((void**) &adjacency_matrix,  sizeof(int**));
+
+    get_graph_device_pointers<<<1, 1>>>(d_graph, nodes, edges, adjacency_matrix);
     cudaDeviceSynchronize();
 
     cudaFree(nodes);
     cudaFree(edges);
+
     for (int i=0; i<num_vertices; i++)
         cudaFree(gpu_pointers_to_free[i]);
 
     cudaFree(adjacency_matrix);
     cudaFree(d_graph);
+
 }

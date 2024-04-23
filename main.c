@@ -83,7 +83,7 @@ int main() {
 
         int *openmp_distances_v1 = (int*) malloc(num_vertices * sizeof(int));
         int *openmp_distances_v1_1 = (int*) malloc(num_vertices * sizeof(int));
-        
+
         int *openmp_distances_v2 = (int*) malloc(num_vertices * sizeof(int));
         int *openmp_distances_v2_1 = (int*) malloc(num_vertices * sizeof(int));
 
@@ -184,23 +184,22 @@ int main() {
 
 
         if(solutions_flag) {
-            print_version_results("Sq", distances_sq, num_vertices, source, 0, time_matrix[0][test_id]); //fixme negative_cycles_bellman_ford_sq
+            print_version_results("Sq", distances_sq, num_vertices, source, negative_cycles_bellman_ford_sq, time_matrix[0][test_id]);
 
-            print_version_results("V0", openmp_distances_v0, num_vertices, source, 0, time_matrix[1][test_id]); //fixme negative_cycles_bellman_ford_v0
-            print_version_results("V0_1", openmp_distances_v0_1, num_vertices, source, 0, time_matrix[2][test_id]); //fixme negative_cycles_bellman_ford_v0_1
+            print_version_results("V0", openmp_distances_v0, num_vertices, source, negative_cycles_bellman_ford_v0, time_matrix[1][test_id]);
+            print_version_results("V0_1", openmp_distances_v0_1, num_vertices, source, negative_cycles_bellman_ford_v0_1, time_matrix[2][test_id]);
 
-            print_version_results("V1", openmp_distances_v1, num_vertices, source, 0, time_matrix[3][test_id]); //fixme negative_cycles_bellman_ford_v1
-            print_version_results("V1_1", openmp_distances_v1_1, num_vertices, source, 0, time_matrix[4][test_id]);//fixme negative_cycles_bellman_ford_v1_1
+            print_version_results("V1", openmp_distances_v1, num_vertices, source, negative_cycles_bellman_ford_v1, time_matrix[3][test_id]);
+            print_version_results("V1_1", openmp_distances_v1_1, num_vertices, source, negative_cycles_bellman_ford_v1_1, time_matrix[4][test_id]);
 
-            print_version_results("V2", openmp_distances_v2, num_vertices, source, 0, time_matrix[5][test_id]); //fixme negative_cycles_bellman_ford_v2
-            print_version_results("V2_1", openmp_distances_v2_1, num_vertices, source, 0, time_matrix[6][test_id]); //fixme negative_cycles_bellman_ford_v2_1
+            print_version_results("V2", openmp_distances_v2, num_vertices, source, negative_cycles_bellman_ford_v2, time_matrix[5][test_id]);
+            print_version_results("V2_1", openmp_distances_v2_1, num_vertices, source, negative_cycles_bellman_ford_v2_1, time_matrix[6][test_id]);
 
-            print_version_results("cuda_V0", cuda_distances_v0, num_vertices, source, 0, time_matrix[7][test_id]);//fixme sostituire cuda_negative_cycles_bellman_ford_v0 a 0
-
+            print_version_results("cuda_V0", cuda_distances_v0, num_vertices, source, cuda_negative_cycles_bellman_ford_v0, time_matrix[7][test_id]);
         }
 
-
-        check_differences(distances_sq, parallel_distances, versions, number_of_versions - 1 , num_vertices);
+        if (!negative_cycles_bellman_ford_sq)
+            check_differences(distances_sq, parallel_distances, versions, number_of_versions - 1 , num_vertices);
 
 
         free(distances_sq);
@@ -223,7 +222,6 @@ int main() {
 
     if(statistics_table_flag)
         print_statistics(versions, (double*) time_matrix, number_of_versions, number_of_test);
-
 
     return 0;
 }

@@ -70,39 +70,36 @@ void print_statistics(const char *versions[], double time_matrix[], int number_o
         double std_dev = calculate_std_dev(number_of_test, &time_matrix[i * number_of_test], mean);
 
         printf("%-15s %-15f %-15f\n", versions[i], mean, std_dev);
+
     }
 }
-
-
-int areArraysEqual(const int *arr1, const int *arr2, int size){
-    for (int i = 0; i < size; ++i){
-        if (arr1[i] != arr2[i])
-            return 0;
-    }
-    return 1;
-}
-
 
 
 void check_differences(const int *serial, int **distances, const char **versions, int numArrays, int length){
     bool *are_equal_flags = (bool*)malloc(numArrays * sizeof(bool));
+    char error_message[100];
 
     for (int i = 0; i < numArrays; i++)
-        are_equal_flags[i] = false;
+        are_equal_flags[i] = true;
 
     for (int i = 0; i < numArrays; i++){
         for (int j = 0; j < length; j++){
             if (serial[j] != distances[i][j]){
-                are_equal_flags[i] = true;
+                are_equal_flags[i] = false;
                 break;
             }
         }
     }
 
     for (int i = 0; i < numArrays; i++){
-        if (are_equal_flags[i])
-            printf("------------------------------------------->ERROR: The Version %s is different from Sequential Version.\n\n", versions[i+1]);
+        if (!are_equal_flags[i]) {
+            snprintf(error_message, sizeof(error_message),
+                     "ERROR: The Version %s is different from Sequential Version.\n\n", versions[i + 1]);
+            printf("\033[1;31m%s\033[0m\n", error_message);
+
+        }
     }
 
     free(are_equal_flags);
+
 }

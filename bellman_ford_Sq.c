@@ -13,16 +13,20 @@ void initialize_distances(int *distances, int num_vertices, int source, int maxi
 }
 
 
-void serial_relax_edges(int *distances, Edge *edges, int num_edges, int num_vertices){
-    //int *new_dist = (int*) malloc(num_vertices * sizeof(int)); //todo aggiungere la new dist anche nella sequenziale in modo che le distanze siano paragonabili anche in caso di cicli negativi
+void serial_relax_edges(int *dist, Edge *edges, int num_edges, int num_vertices){
+    int *new_dist = (int*) malloc(num_vertices * sizeof(int));
+    memcpy(new_dist, dist, num_vertices * sizeof(int));
+
     for (int i = 0; i < num_edges; i++){
         int origin = edges[i].origin;
         int end = edges[i].end;
         int weight = edges[i].weight;
 
-        if (distances[origin] != INT_MAX && distances[origin] + weight < distances[end])
-            distances[end] = distances[origin] + weight;
+        if (dist[origin] + weight < new_dist[end])
+            new_dist[end] = dist[origin] + weight;
     }
+    memcpy(dist, new_dist, num_vertices * sizeof(int));
+
 }
 
 
@@ -31,11 +35,6 @@ int bellman_ford_serial(Graph *graph, int source, int *distances){
 
     for (int i = 0; i < graph->num_vertices - 1; i++){
         serial_relax_edges(distances, graph->edges, graph->num_edges, graph->num_vertices);
-        printf("relax: %d\n", i);
-        for(int j = 0; j<graph->num_vertices; j++){
-            printf("%d ", distances[j]);
-        }
-        printf("\n");
     }
 
     for (int i = 0; i < graph->num_edges; i++){
@@ -43,7 +42,7 @@ int bellman_ford_serial(Graph *graph, int source, int *distances){
         int end = graph->edges[i].end;
         int weight = graph->edges[i].weight;
 
-        if (distances[origin] != INT_MAX && distances[origin] + weight < distances[end])
+        if (distances[origin] + weight < distances[end])
             return 1;
     }
     return 0;
