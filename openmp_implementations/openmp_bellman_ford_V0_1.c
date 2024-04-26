@@ -22,7 +22,6 @@ void parallel_relax_edges_1(int *distances, Edge *edges, int num_edges){
 }
 
 
-
 int bellman_ford_v0_1(Graph *graph, int source, int *dist){
     int negative_cycle = 0;
 

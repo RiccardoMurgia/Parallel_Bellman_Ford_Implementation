@@ -31,6 +31,36 @@ __global__ void cuda_initialize_distances(int *d_dist, Graph *d_graph, const int
 }
 
 
+__global__ void detect_negative_cycle(int *d_dist, Graph *d_graph, int *negative_cycle_flag) {
+    __shared__ bool cycle_detected;
+    unsigned int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
+
+    if (threadIdx.x == 0)
+        cycle_detected = false;
+
+    __syncthreads();
+
+    if (!cycle_detected && tid < d_graph->num_edges) {
+        int origin = d_graph->edges[tid].origin;
+        int end = d_graph->edges[tid].end;
+        int weight = d_graph->edges[tid].weight;
+
+        if (d_dist[origin] + weight < d_dist[end])
+            cycle_detected = true;
+
+    }
+
+    __syncthreads();
+
+    if (cycle_detected && threadIdx.x == 0)
+        atomicExch(negative_cycle_flag, 1);
+
+    if (cycle_detected)
+        return;
+
+}
+
+
 void copy_edge_list_2_GPU(Edge **d_edges, Edge *h_edges, int num_edges){
     cudaMalloc((void **) d_edges, sizeof(Edge) * num_edges);
     for (int i=0 ; i<num_edges; i++)

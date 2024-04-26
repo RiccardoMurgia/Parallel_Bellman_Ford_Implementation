@@ -3,26 +3,30 @@
 //
 
 
-#include "cuda_bellman_ford_V0.cuh"
+#include "cuda_bellman_ford_V0_1.cuh"
 #include "cuda_utilities.cuh"
 
 
-__global__ void cuda_parallel_relax_edges_0(int *d_distances, Graph *d_graph){
+__global__ void cuda_parallel_relax_edges_1(int *d_distances, Graph *d_graph){
     unsigned int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
+    for (int i = 0; i < d_graph->num_vertices - 1; i++){
 
-    if (tid < d_graph->num_edges){
+        if (tid < d_graph->num_edges){
 
-        int origin = d_graph->edges[tid].origin;
-        int end = d_graph->edges[tid].end;
-        int weight = d_graph->edges[tid].weight;
+            int origin = d_graph->edges[tid].origin;
+            int end = d_graph->edges[tid].end;
+            int weight = d_graph->edges[tid].weight;
 
-        if (d_distances[origin] + weight < d_distances[end])
-            atomicMin(&d_distances[end], d_distances[origin] + weight);
+            if (d_distances[origin] + weight < d_distances[end])
+                atomicMin(&d_distances[end], d_distances[origin] + weight);
+         }
+        __syncthreads();
+
     }
 }
 
 
-extern "C" int cuda_bellman_ford_v0(Graph *graph, int source, int *dist, int threads_per_block){
+extern "C" int cuda_bellman_ford_v0_1(Graph *graph, int source, int *dist, int threads_per_block){
     int num_blocks = (graph->num_edges + threads_per_block - 1) / threads_per_block;
     int negative_cycles = 0;
 
@@ -43,10 +47,7 @@ extern "C" int cuda_bellman_ford_v0(Graph *graph, int source, int *dist, int thr
     cudaMemcpy(d_negative_cycles, &negative_cycles, sizeof(int), cudaMemcpyHostToDevice);
     cudaDeviceSynchronize();
 
-    for (int i = 0; i < graph->num_vertices - 1; i++){
-        cuda_parallel_relax_edges_0<<<num_blocks, threads_per_block>>>(d_dist, d_graph);
-        cudaDeviceSynchronize();
-    }
+    cuda_parallel_relax_edges_1<<<num_blocks, threads_per_block>>>(d_dist, d_graph);
 
     detect_negative_cycle<<<num_blocks, threads_per_block>>>(d_dist, d_graph, d_negative_cycles);
 

@@ -19,6 +19,7 @@
 #include "openmp_implementations/openmp_bellman_ford_V2_1.h"
 
 #include "cuda_implementations/cuda_bellman_ford_V0.cuh"
+#include "cuda_implementations/cuda_bellman_ford_V0_1.cuh"
 
 
 
@@ -39,9 +40,9 @@ int main() {
     double start_time_sq, end_time_sq;
     double openmp_start_time_v0, openmp_end_time_v0, openmp_start_time_v1, openmp_end_time_v1, openmp_start_time_v2, openmp_end_time_v2;
     double openmp_start_time_v0_1, openmp_end_time_v0_1, openmp_start_time_v1_1, openmp_end_time_v1_1, openmp_start_time_v2_1, openmp_end_time_v2_1;
-    double cuda_start_time_v0, cuda_end_time_v0;
+    double cuda_start_time_v0, cuda_end_time_v0, cuda_start_time_v0_1, cuda_end_time_v0_1;
 
-    const char *versions[] = {"Sq", "V0", "V0_1", "V1", "V1_1", "V2", "V2_1", "cuda_V0"};
+    const char *versions[] = {"Sq", "V0", "V0_1", "V1", "V1_1", "V2", "V2_1", "cuda_V0", "cuda_V0_1"};
     int number_of_versions = sizeof(versions) / sizeof(versions[0]);;
 
     // Input parameters
@@ -88,11 +89,12 @@ int main() {
         int *openmp_distances_v2_1 = (int*) malloc(num_vertices * sizeof(int));
 
         int *cuda_distances_v0 = (int*) malloc(num_vertices * sizeof(int));
+        int *cuda_distances_v0_1 = (int*) malloc(num_vertices * sizeof(int));
 
         int *parallel_distances[] = {openmp_distances_v0, openmp_distances_v0_1,
                                      openmp_distances_v1, openmp_distances_v1_1,
                                      openmp_distances_v2, openmp_distances_v2_1,
-                                     cuda_distances_v0};
+                                     cuda_distances_v0, cuda_distances_v0_1};
 
 
         if(solutions_flag) {
@@ -175,12 +177,20 @@ int main() {
             time_matrix[6][test_id] = openmp_end_time_v2_1 - openmp_start_time_v2_1;
 
 
+
         //CUDA Parallel version working on the nodes and parallelize also the minimum candidate search
             //Version that destroys creates threads at every relaxation
             cuda_start_time_v0 = omp_get_wtime();
             int cuda_negative_cycles_bellman_ford_v0 = cuda_bellman_ford_v0(&myGraph, source, cuda_distances_v0, 1000);
             cuda_end_time_v0 = omp_get_wtime();
             time_matrix[7][test_id] = cuda_end_time_v0 - cuda_start_time_v0;
+
+            //Version that reuse threads
+            cuda_start_time_v0_1 = omp_get_wtime();
+            int cuda_negative_cycles_bellman_ford_v0_1 = cuda_bellman_ford_v0_1(&myGraph, source, cuda_distances_v0_1, 1000);
+            cuda_end_time_v0_1 = omp_get_wtime();
+            time_matrix[8][test_id] = cuda_end_time_v0_1 - cuda_start_time_v0_1;
+
 
 
         if(solutions_flag) {
@@ -195,7 +205,9 @@ int main() {
             print_version_results("V2", openmp_distances_v2, num_vertices, source, negative_cycles_bellman_ford_v2, time_matrix[5][test_id]);
             print_version_results("V2_1", openmp_distances_v2_1, num_vertices, source, negative_cycles_bellman_ford_v2_1, time_matrix[6][test_id]);
 
+
             print_version_results("cuda_V0", cuda_distances_v0, num_vertices, source, cuda_negative_cycles_bellman_ford_v0, time_matrix[7][test_id]);
+            print_version_results("cuda_V0_1", cuda_distances_v0_1, num_vertices, source, cuda_negative_cycles_bellman_ford_v0_1, time_matrix[8][test_id]);
         }
 
         if (!negative_cycles_bellman_ford_sq)
@@ -212,6 +224,7 @@ int main() {
         free(openmp_distances_v2_1);
 
         free(cuda_distances_v0);
+        free(cuda_distances_v0_1);
 
         free_graph(&myGraph);
 
