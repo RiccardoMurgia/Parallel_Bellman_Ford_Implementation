@@ -26,6 +26,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(SOURCES
         general_utilities.c
         graph_generator.c
+
         bellman_ford_Sq.c
 
         openmp_implementations/openmp_utilities.c
@@ -39,6 +40,7 @@ set(SOURCES
         cuda_implementations/cuda_utilities.cu
         cuda_implementations/cuda_bellman_ford_V0.cu
         cuda_implementations/cuda_bellman_ford_V0_1.cu
+        cuda_implementations/cuda_bellman_ford_V1.cu
 
         main.c
 )

@@ -3,7 +3,6 @@
 //
 
 
-#include <iostream>
 #include "cuda_utilities.cuh"
 
 
@@ -23,15 +22,15 @@ __global__ void get_graph_device_pointers(Graph *d_graph, int **nodes, Edge **ed
 }
 
 
-__global__ void cuda_initialize_distances(int *d_dist, Graph *d_graph, const int *d_source){
+__global__ void cuda_initialize_distances(int *d_dist, Graph *d_graph, const int d_source){
     unsigned int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
     if (tid < d_graph->num_vertices)
-        d_dist[tid] = (tid == *d_source) ? 0 : INT_MAX - d_graph->maximum_weight;
+        d_dist[tid] = (tid == d_source) ? 0 : INT_MAX - d_graph->maximum_weight;
 
 }
 
 
-__global__ void detect_negative_cycle(int *d_dist, Graph *d_graph, int *negative_cycle_flag) {
+__global__ void detect_negative_cycle_0(int *d_dist, Graph *d_graph, int *negative_cycle_flag){
     __shared__ bool cycle_detected;
     unsigned int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
@@ -46,6 +45,47 @@ __global__ void detect_negative_cycle(int *d_dist, Graph *d_graph, int *negative
         int weight = d_graph->edges[tid].weight;
 
         if (d_dist[origin] + weight < d_dist[end])
+            cycle_detected = true;
+
+    }
+
+    __syncthreads();
+
+    if (cycle_detected && threadIdx.x == 0)
+        atomicExch(negative_cycle_flag, 1);
+
+    if (cycle_detected)
+        return;
+
+}
+
+
+__global__ void detect_negative_cycle_1(const int *d_dist, Graph *d_graph, int *negative_cycle_flag, int *d_candidate_dist){
+    __shared__ bool cycle_detected;
+    unsigned int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
+
+    if (threadIdx.x == 0)
+        cycle_detected = false;
+
+    __syncthreads();
+
+    if (!cycle_detected && tid < d_graph->num_edges) {
+
+        for (int u = 0; u < d_graph->num_vertices; u++)
+            d_candidate_dist[tid*d_graph->num_vertices+u] = d_dist[u] + d_graph->adjacency_matrix[u][tid];
+
+        MinResult min_candidate_dist;
+        min_candidate_dist.value = INT_MAX;
+        min_candidate_dist.index = -1;
+
+        for (int i = 0; i < d_graph->num_vertices; i++){
+            if (d_candidate_dist[i] < min_candidate_dist.value) {
+                min_candidate_dist.value = d_candidate_dist[i];
+                min_candidate_dist.index = i;
+            }
+        }
+
+        if (min_candidate_dist.value < d_dist[tid])
             cycle_detected = true;
 
     }
@@ -85,7 +125,7 @@ int** copy_adjacency_matrix_2_GPU(int **hostMatrix, int ***deviceMatrix, int num
 }
 
 
-int** copy_graph_2_GPU(Graph *h_graph, Graph *d_graph) {
+int** copy_graph_2_GPU(Graph *h_graph, Graph *d_graph){
     int *d_nodes;
     Edge *d_edges;
     int **d_adjacency_matrix;

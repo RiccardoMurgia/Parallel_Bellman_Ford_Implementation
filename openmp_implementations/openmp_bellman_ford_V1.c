@@ -17,9 +17,9 @@ int bellman_ford_v1(Graph *graph, int source, int *dist){
         int *new_dist = (int*) malloc(graph->num_vertices * sizeof(int));
         int *new_predecessor = (int*) malloc(graph->num_vertices * sizeof(int));
 
-        #pragma omp parallel for default(none) shared(graph, dist, predecessor, new_dist, new_predecessor) firstprivate(source)
+        #pragma omp parallel for default(none) shared(graph, dist, predecessor, new_dist, new_predecessor)
             for (int v = 0; v < graph->num_vertices; v++) {
-                int *candidate_dist = (int*) malloc(graph->num_vertices * sizeof(int));
+                int *candidate_dist = malloc(graph->num_vertices * sizeof(int));
 
                 for (int u = 0; u < graph->num_vertices; u++)
                     candidate_dist[u] = dist[u] + graph->adjacency_matrix[u][v];
@@ -37,7 +37,6 @@ int bellman_ford_v1(Graph *graph, int source, int *dist){
                 free(candidate_dist);
             }
 
-        #pragma omp single
             memcpy(dist, new_dist, graph->num_vertices * sizeof(int));
             memcpy(predecessor, new_predecessor, graph->num_vertices * sizeof(int));
 

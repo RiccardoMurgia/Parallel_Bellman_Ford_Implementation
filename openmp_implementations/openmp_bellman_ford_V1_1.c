@@ -39,15 +39,14 @@ int bellman_ford_v1_1(Graph *graph, int source, int *dist){
                 free(candidate_dist);
         }
 
-        #pragma omp single
-                memcpy(dist, new_dist, graph->num_vertices * sizeof(int));
-                memcpy(predecessor, new_predecessor, graph->num_vertices * sizeof(int));
+            memcpy(dist, new_dist, graph->num_vertices * sizeof(int));
+            memcpy(predecessor, new_predecessor, graph->num_vertices * sizeof(int));
 
-                free(new_dist);
-                free(new_predecessor);
+            free(new_dist);
+            free(new_predecessor);
 
-                new_dist = NULL;
-                new_predecessor = NULL;
+            new_dist = NULL;
+            new_predecessor = NULL;
     }
 
     #pragma omp  for
