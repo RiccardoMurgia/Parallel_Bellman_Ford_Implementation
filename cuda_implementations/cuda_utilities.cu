@@ -30,7 +30,7 @@ __global__ void cuda_initialize_distances(int *d_dist, Graph *d_graph, const int
 }
 
 
-__global__ void detect_negative_cycle_0(int *d_dist, Graph *d_graph, int *negative_cycle_flag){
+__global__ void detect_negative_cycle_0(const int *d_dist, Graph *d_graph, int *negative_cycle_flag){
     __shared__ bool cycle_detected;
     unsigned int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
@@ -61,15 +61,9 @@ __global__ void detect_negative_cycle_0(int *d_dist, Graph *d_graph, int *negati
 
 
 __global__ void detect_negative_cycle_1(const int *d_dist, Graph *d_graph, int *negative_cycle_flag, int *d_candidate_dist){
-    __shared__ bool cycle_detected;
     unsigned int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
-    if (threadIdx.x == 0)
-        cycle_detected = false;
-
-    __syncthreads();
-
-    if (!cycle_detected && tid < d_graph->num_edges) {
+    if (*negative_cycle_flag == 0  && tid < d_graph->num_vertices) {
 
         for (int u = 0; u < d_graph->num_vertices; u++)
             d_candidate_dist[tid*d_graph->num_vertices+u] = d_dist[u] + d_graph->adjacency_matrix[u][tid];
@@ -79,25 +73,15 @@ __global__ void detect_negative_cycle_1(const int *d_dist, Graph *d_graph, int *
         min_candidate_dist.index = -1;
 
         for (int i = 0; i < d_graph->num_vertices; i++){
-            if (d_candidate_dist[i] < min_candidate_dist.value) {
-                min_candidate_dist.value = d_candidate_dist[i];
+            if (d_candidate_dist[tid*d_graph->num_vertices+i] < min_candidate_dist.value) {
+                min_candidate_dist.value = d_candidate_dist[tid*d_graph->num_vertices+i];
                 min_candidate_dist.index = i;
             }
         }
 
         if (min_candidate_dist.value < d_dist[tid])
-            cycle_detected = true;
-
+            *negative_cycle_flag = 1;
     }
-
-    __syncthreads();
-
-    if (cycle_detected && threadIdx.x == 0)
-        atomicExch(negative_cycle_flag, 1);
-
-    if (cycle_detected)
-        return;
-
 }
 
 

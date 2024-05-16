@@ -18,10 +18,10 @@ int bellman_ford_v1_1(Graph *graph, int source, int *dist){
     for (int i = 0; i < graph->num_vertices; i++){
         int *new_dist = (int*) malloc(graph->num_vertices * sizeof(int));
         int *new_predecessor = (int*) malloc(graph->num_vertices * sizeof(int));
+        int *candidate_dist = (int*) malloc(graph->num_vertices * sizeof(int));
 
         #pragma omp for
             for (int v = 0; v < graph->num_vertices; v++) {
-                int *candidate_dist = (int*) malloc(graph->num_vertices * sizeof(int));
 
                 for (int u = 0; u < graph->num_vertices; u++)
                     candidate_dist[u] = dist[u] + graph->adjacency_matrix[u][v];
@@ -36,17 +36,17 @@ int bellman_ford_v1_1(Graph *graph, int source, int *dist){
                     new_dist[v] = dist[v];
                     new_predecessor[v] = predecessor[v];
                 }
-                free(candidate_dist);
         }
 
-            memcpy(dist, new_dist, graph->num_vertices * sizeof(int));
-            memcpy(predecessor, new_predecessor, graph->num_vertices * sizeof(int));
+        memcpy(dist, new_dist, graph->num_vertices * sizeof(int));
+        memcpy(predecessor, new_predecessor, graph->num_vertices * sizeof(int));
 
-            free(new_dist);
-            free(new_predecessor);
+        free(new_dist);
+        free(new_predecessor);
+        free(candidate_dist);
 
-            new_dist = NULL;
-            new_predecessor = NULL;
+        new_dist = NULL;
+        new_predecessor = NULL;
     }
 
     #pragma omp  for

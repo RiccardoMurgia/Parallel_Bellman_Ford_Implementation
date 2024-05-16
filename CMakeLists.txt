@@ -41,6 +41,7 @@ set(SOURCES
         cuda_implementations/cuda_bellman_ford_V0.cu
         cuda_implementations/cuda_bellman_ford_V0_1.cu
         cuda_implementations/cuda_bellman_ford_V1.cu
+        cuda_implementations/cuda_bellman_ford_V1_1.cu
 
         main.c
 )

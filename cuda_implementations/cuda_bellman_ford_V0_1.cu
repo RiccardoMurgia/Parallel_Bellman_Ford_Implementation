@@ -5,7 +5,6 @@
 
 #include "cuda_bellman_ford_V0_1.cuh"
 #include "cuda_utilities.cuh"
-#include <cuda_runtime.h>
 
 
 
@@ -18,7 +17,7 @@ __global__ void cuda_parallel_relax_edges_1(int d_group_size,  int *d_dist, Grap
 
         for (int j = 0; j < d_group_size; j++){
             unsigned int g_index = tid * (d_group_size) + j;
-            if (g_index< d_graph->num_edges){
+            if (g_index < d_graph->num_edges){
                 int origin = d_graph->edges[g_index].origin;
                 int end = d_graph->edges[g_index].end;
                 int weight = d_graph->edges[g_index].weight;
