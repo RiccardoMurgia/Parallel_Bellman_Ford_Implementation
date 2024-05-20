@@ -45,15 +45,15 @@ MinResult parallel_find_min_value_0(const int *array, int size){
     result.value = INT_MAX;
     result.index = -1;
 
-#pragma omp declare reduction(MinResultMin: MinResult: omp_out = omp_in.value < omp_out.value ? omp_in : omp_out) initializer(omp_priv = {INT_MAX, -1})
+    #pragma omp declare reduction(MinResultMin: MinResult: omp_out = omp_in.value < omp_out.value ? omp_in : omp_out) initializer(omp_priv = {INT_MAX, -1})
 
-#pragma omp parallel for default(none) firstprivate(array, size) reduction(MinResultMin: result)
-    for (int i = 0; i < size; i++){
-        if (array[i] < result.value){
-            result.value = array[i];
-            result.index = i;
+    #pragma omp parallel for default(none) firstprivate(array, size) reduction(MinResultMin: result)
+        for (int i = 0; i < size; i++){
+            if (array[i] < result.value){
+                result.value = array[i];
+                result.index = i;
+            }
         }
-    }
 
     return result;
 }

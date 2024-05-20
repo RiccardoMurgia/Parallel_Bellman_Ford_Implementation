@@ -27,9 +27,8 @@ __device__ MinResult d_find_min_value_1(const int *array, int num_vertices, unsi
 }
 
 
-__global__ void update_distances_1(int d_group_size, int *d_dist, Graph *d_graph, int *d_predecessor,
-                                 int *d_new_dist, int *d_new_predecessor, int *d_candidate_dist,
-                                 volatile int *d_n_block_processed, volatile int *d_semaphore) {
+__global__ void update_distances_1(int d_group_size, int *d_dist, Graph *d_graph, int *d_new_dist, int *d_candidate_dist,
+                                   volatile int *d_n_block_processed, volatile int *d_semaphore) {
     unsigned int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
     unsigned int num_blocks = gridDim.x;
     int *d_tmp;
@@ -46,14 +45,11 @@ __global__ void update_distances_1(int d_group_size, int *d_dist, Graph *d_graph
 
                 MinResult min_candidate_dist = d_find_min_value_1(d_candidate_dist, d_graph->num_vertices, tid);
 
-                if (min_candidate_dist.value < d_dist[tid]){
+                if (min_candidate_dist.value < d_dist[tid])
                     d_new_dist[tid] = min_candidate_dist.value;
-                    d_new_predecessor[tid] = min_candidate_dist.index;
-                }
-                else {
+                else
                     d_new_dist[tid] = d_dist[tid];
-                    d_new_predecessor[tid] = d_predecessor[tid];
-                }
+
             }
             __syncthreads();
 
@@ -73,10 +69,6 @@ __global__ void update_distances_1(int d_group_size, int *d_dist, Graph *d_graph
             d_dist = d_new_dist;
             d_new_dist = d_tmp;
 
-            d_tmp = d_predecessor;
-            d_predecessor = d_new_predecessor;
-            d_new_predecessor = d_tmp;
-
         }
     }
 }
@@ -84,7 +76,6 @@ __global__ void update_distances_1(int d_group_size, int *d_dist, Graph *d_graph
 
 extern "C" int cuda_bellman_ford_v1_1(Graph *graph, int source, int *dist, int threads_per_block){
     int negative_cycles = 0;
-    int *predecessor = (int*) malloc(graph->num_vertices * sizeof(int));
 
 
     cudaDeviceProp deviceProp{};
@@ -109,20 +100,16 @@ extern "C" int cuda_bellman_ford_v1_1(Graph *graph, int source, int *dist, int t
     volatile int *d_n_block_processed = nullptr;
     volatile int *d_semaphore = nullptr;
     int *d_negative_cycles = nullptr;
-    int *d_predecessor = nullptr;
     int *d_candidate_dist = nullptr;
     int *d_new_dist = nullptr;
-    int *d_new_predecessor = nullptr;
 
     cudaMalloc((void **) &d_dist, sizeof(int) * graph->num_vertices);
     cudaMalloc((void **) &d_graph, sizeof(Graph));
     cudaMalloc((void **) &d_n_block_processed, sizeof(int));
     cudaMalloc((void **) &d_semaphore, sizeof(int));
     cudaMalloc((void **) &d_negative_cycles, sizeof(int));
-    cudaMalloc((void **) &d_predecessor, sizeof(int) * graph->num_vertices);
     cudaMalloc((void **) &d_candidate_dist, sizeof(int) * graph->num_vertices * graph->num_vertices);
     cudaMalloc((void **) &d_new_dist, sizeof(int) * graph->num_vertices);
-    cudaMalloc((void **) &d_new_predecessor, sizeof(int) * graph->num_vertices);
 
     int **gpu_adjacency_matrix_ptrs_2_free = copy_graph_2_GPU(graph, d_graph);
     cuda_initialize_distances<<<num_blocks, threads_per_block>>>(d_dist, d_graph, source);
@@ -131,8 +118,7 @@ extern "C" int cuda_bellman_ford_v1_1(Graph *graph, int source, int *dist, int t
     cudaMemcpy(d_negative_cycles, &negative_cycles, sizeof(int), cudaMemcpyHostToDevice);
 
 
-    update_distances_1<<<num_blocks, threads_per_block>>>(group_size, d_dist, d_graph, d_predecessor,
-                                                          d_new_dist, d_new_predecessor, d_candidate_dist,
+    update_distances_1<<<num_blocks, threads_per_block>>>(group_size, d_dist, d_graph, d_new_dist,  d_candidate_dist,
                                                           d_n_block_processed, d_semaphore);
 
 
@@ -140,14 +126,11 @@ extern "C" int cuda_bellman_ford_v1_1(Graph *graph, int source, int *dist, int t
     cudaMemcpy(&negative_cycles, d_negative_cycles, sizeof(int), cudaMemcpyDeviceToHost);
 
 
-    if(!negative_cycles) {
+    if(!negative_cycles)
         cudaMemcpy(dist, d_dist, sizeof(int) * graph->num_vertices, cudaMemcpyDeviceToHost);
-        cudaMemcpy(predecessor, d_predecessor, sizeof(int) * graph->num_vertices, cudaMemcpyDeviceToHost);
 
-    }
 
     cudaFree(d_new_dist);
-    cudaFree(d_new_predecessor);
 
     cudaFree(d_dist);
     freeGraph(d_graph, gpu_adjacency_matrix_ptrs_2_free, graph->num_vertices);

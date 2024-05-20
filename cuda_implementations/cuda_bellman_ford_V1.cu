@@ -26,8 +26,7 @@ __device__ MinResult d_find_min_value(const int *array, int num_vertices, unsign
 }
 
 
-__global__ void update_distances(const int *d_dist, Graph *d_graph, const int *d_predecessor,
-                                 int *d_new_dist, int *d_new_predecessor, int *d_candidate_dist){
+__global__ void update_distances(const int *d_dist, Graph *d_graph, int *d_new_dist, int *d_candidate_dist){
     unsigned int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
     if (tid < d_graph->num_vertices){
@@ -37,14 +36,11 @@ __global__ void update_distances(const int *d_dist, Graph *d_graph, const int *d
 
         MinResult min_candidate_dist = d_find_min_value(d_candidate_dist, d_graph->num_vertices, tid);
 
-        if (min_candidate_dist.value < d_dist[tid]){
+        if (min_candidate_dist.value < d_dist[tid])
             d_new_dist[tid] = min_candidate_dist.value;
-            d_new_predecessor[tid] = min_candidate_dist.index;
-        }
-        else {
+        else
             d_new_dist[tid] = d_dist[tid];
-            d_new_predecessor[tid] = d_predecessor[tid];
-        }
+
     }
 
 }
@@ -53,12 +49,10 @@ __global__ void update_distances(const int *d_dist, Graph *d_graph, const int *d
 extern "C" int cuda_bellman_ford_v1(Graph *graph, int source, int *dist, int threads_per_block){
     int num_blocks = (graph->num_vertices + threads_per_block - 1) / threads_per_block;
     int negative_cycles = 0;
-    int *predecessor = (int*) malloc(graph->num_vertices * sizeof(int));
 
     int *d_dist = nullptr;
     Graph *d_graph = nullptr;
     int *d_negative_cycles = nullptr;
-    int *d_predecessor = nullptr;
     int *d_candidate_dist = nullptr;
     int *d_new_dist = nullptr;
     int *d_new_predecessor = nullptr;
@@ -67,7 +61,6 @@ extern "C" int cuda_bellman_ford_v1(Graph *graph, int source, int *dist, int thr
     cudaMalloc((void **) &d_dist, sizeof(int) * graph->num_vertices);
     cudaMalloc((void **) &d_graph, sizeof(Graph));
     cudaMalloc((void **) &d_negative_cycles, sizeof(int));
-    cudaMalloc((void **) &d_predecessor, sizeof(int) * graph->num_vertices);
     cudaMalloc((void **) &d_candidate_dist, sizeof(int) * graph->num_vertices * graph->num_vertices);
     cudaMalloc((void **) &d_new_dist, sizeof(int) * graph->num_vertices);
     cudaMalloc((void **) &d_new_predecessor, sizeof(int) * graph->num_vertices);
@@ -79,29 +72,21 @@ extern "C" int cuda_bellman_ford_v1(Graph *graph, int source, int *dist, int thr
 
 
     for (int i = 0; i < graph->num_vertices; i++){
-        update_distances<<<num_blocks, threads_per_block>>>(d_dist, d_graph, d_predecessor, d_new_dist,
-                                                            d_new_predecessor, d_candidate_dist);
+        update_distances<<<num_blocks, threads_per_block>>>(d_dist, d_graph, d_new_dist, d_candidate_dist);
         cudaDeviceSynchronize();
 
         d_tmp = d_dist;
         d_dist = d_new_dist;
         d_new_dist = d_tmp;
-
-        d_tmp = d_predecessor;
-        d_predecessor = d_new_predecessor;
-        d_new_predecessor = d_tmp;
-
     }
 
 
     detect_negative_cycle_1<<<num_blocks, threads_per_block>>>(d_dist, d_graph, d_negative_cycles, d_candidate_dist);
     cudaMemcpy(&negative_cycles, d_negative_cycles, sizeof(int), cudaMemcpyDeviceToHost);
 
-    if(!negative_cycles) {
+    if(!negative_cycles)
         cudaMemcpy(dist, d_dist, sizeof(int) * graph->num_vertices, cudaMemcpyDeviceToHost);
-        cudaMemcpy(predecessor, d_predecessor, sizeof(int) * graph->num_vertices, cudaMemcpyDeviceToHost);
 
-    }
 
     cudaFree(d_new_dist);
     cudaFree(d_new_predecessor);
