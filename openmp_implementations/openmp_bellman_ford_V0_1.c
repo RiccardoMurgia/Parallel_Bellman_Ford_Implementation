@@ -25,21 +25,22 @@ void parallel_relax_edges_1(int *distances, Edge *edges, int num_edges){
 int bellman_ford_v0_1(Graph *graph, int source, int *dist){
     int negative_cycles = 0;
 
-    #pragma omp parallel default(none) shared(graph, dist) firstprivate(source) reduction(+:negative_cycles)
+    #pragma omp parallel default(none) shared(graph, dist, negative_cycles) firstprivate(source)
+    {
         parallel_initialize_distances_1(dist, graph->num_vertices, source, graph->maximum_weight);
 
         for (int i = 0; i < graph->num_vertices - 1; i++)
-                parallel_relax_edges_1(dist, graph->edges, graph->num_edges);
+            parallel_relax_edges_1(dist, graph->edges, graph->num_edges);
 
-        #pragma omp for
-            for (int i = 0; i < graph->num_edges; i++){
-                int origin = graph->edges[i].origin;
-                int end = graph->edges[i].end;
-                int weight = graph->edges[i].weight;
+        #pragma omp for reduction(+:negative_cycles)
+        for (int i = 0; i < graph->num_edges; i++) {
+            int origin = graph->edges[i].origin;
+            int end = graph->edges[i].end;
+            int weight = graph->edges[i].weight;
 
-                if (dist[origin] + weight < dist[end])
-                    negative_cycles += 1;
-            }
-
+            if (dist[origin] + weight < dist[end])
+                negative_cycles += 1;
+        }
+    }
     return negative_cycles;
 }

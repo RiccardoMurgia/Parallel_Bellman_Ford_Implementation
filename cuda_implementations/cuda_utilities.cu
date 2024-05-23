@@ -18,7 +18,6 @@ __global__ void get_graph_device_pointers(Graph *d_graph, int **nodes, Edge **ed
     *nodes = d_graph->nodes;
     *edges = d_graph->edges;
     *adjacency_matrix = d_graph->adjacency_matrix;
-
 }
 
 

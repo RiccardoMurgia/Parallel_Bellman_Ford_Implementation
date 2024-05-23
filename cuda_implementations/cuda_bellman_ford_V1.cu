@@ -71,7 +71,7 @@ extern "C" int cuda_bellman_ford_v1(Graph *graph, int source, int *dist, int thr
     cudaDeviceSynchronize();
 
 
-    for (int i = 0; i < graph->num_vertices; i++){
+    for (int i = 1; i < graph->num_vertices; i++){
         update_distances<<<num_blocks, threads_per_block>>>(d_dist, d_graph, d_new_dist, d_candidate_dist);
         cudaDeviceSynchronize();
 

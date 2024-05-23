@@ -17,7 +17,6 @@ void parallel_initialize_distances_0(int *distances, int num_vertices, int sourc
 
 void parallel_initialize_distances_1(int *distances, int num_vertices, int source, int maximum_weight){
     #pragma omp for
-
         for (int i = 0; i < num_vertices; i++)
             distances[i] = (i == source) ? 0 : INT_MAX - maximum_weight;
 
@@ -40,7 +39,7 @@ MinResult find_min_value(const int *array, int size){
 }
 
 
-MinResult parallel_find_min_value_0(const int *array, int size){
+MinResult parallel_find_min_value(const int *array, int size){
     MinResult result;
     result.value = INT_MAX;
     result.index = -1;
@@ -58,23 +57,5 @@ MinResult parallel_find_min_value_0(const int *array, int size){
     return result;
 }
 
-
-MinResult parallel_find_min_value_1(const int *array, int size){
-    MinResult result;
-    result.value = INT_MAX;
-    result.index = -1;
-
-    #pragma omp declare reduction(MinResultMin: MinResult: omp_out = omp_in.value < omp_out.value ? omp_in : omp_out) initializer(omp_priv = {INT_MAX, -1})
-
-    #pragma omp for
-        for (int i = 0; i < size; i++){
-            if (array[i] < result.value){
-                result.value = array[i];
-                result.index = i;
-            }
-        }
-
-    return result;
-}
 
 

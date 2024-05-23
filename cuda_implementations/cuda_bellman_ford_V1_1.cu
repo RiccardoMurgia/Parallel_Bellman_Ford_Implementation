@@ -34,7 +34,7 @@ __global__ void update_distances_1(int d_group_size, int *d_dist, Graph *d_graph
     int *d_tmp;
 
 
-    for (int i = 0; i < d_graph->num_vertices; i++) {
+    for (int i = 1; i < d_graph->num_vertices; i++) {
 
         for (int j = 0; j < d_group_size; j++) {
             unsigned int g_index = tid * (d_group_size) + j;

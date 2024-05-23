@@ -8,8 +8,7 @@
 #SBATCH --output=ProjectOut
 #SBATCH --gres=gpu:1
 
-if not[ -d "obj" ]; then
-    echo "Compiling the files"
+if [ ! -d "obj" ]; then
     mkdir obj
 fi
 
@@ -38,4 +37,4 @@ gcc -fopenmp obj/general_utilities.o obj/graph_generator.o obj/bellman_ford_Sq.o
     obj/cuda_utilities.o obj/cuda_bellman_ford_V0.o obj/cuda_bellman_ford_V0_1.o obj/cuda_bellman_ford_V1.o  \
     obj/cuda_bellman_ford_V1_1.o obj/main.o -o executable -lm -L/opt/cuda/lib64 -lcudart
 
-./executable
+./executable 1

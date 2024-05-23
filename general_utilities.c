@@ -4,6 +4,7 @@
 
 
 #include "general_utilities.h"
+#include <string.h>
 
 
 
@@ -102,4 +103,32 @@ void check_differences(const int *serial, int **distances, const char **versions
 
     free(are_equal_flags);
 
+}
+
+
+void write_results_in_txt(const char *file_name, const char **versions, const double *time_statistics, const int num_versions,
+                          const int n_cols, const  char *header_string) {
+    FILE *file = fopen(file_name, "w");
+    if (file == NULL) {
+        fprintf(stderr, "Error opening the file %s\n", file_name);
+        return;
+    }
+
+    fprintf(file, "Algorithm ");
+    for (int i=0; i<(n_cols); i++) {
+        fprintf(file, "mean_%s%d ", header_string, i+1);
+        fprintf(file, "std_dev_%s%d ", header_string, i+1);
+    }
+
+    for (int i=0; i<num_versions; i++) {
+        fprintf(file, "\n%s ", versions[i]);
+        for (int j = 0; j<(n_cols * 2); j++) {
+            fprintf(file, "%f " , time_statistics[i * 2*(n_cols) + j]);
+        }
+    }
+
+    if (fclose(file) != 0) {
+        fprintf(stderr, "Error closing the file %s\n", file_name);
+        return;
+    }
 }
