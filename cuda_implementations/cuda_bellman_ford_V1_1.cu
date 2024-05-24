@@ -74,7 +74,7 @@ __global__ void update_distances_1(int d_group_size, int *d_dist, Graph *d_graph
 }
 
 
-extern "C" int cuda_bellman_ford_v1_1(Graph *graph, int source, int *dist, int threads_per_block){
+extern "C" int cuda_bellman_ford_v1_1(Graph *graph, int source, int *dist, int threads_per_block, double  *kernels_time){
     int negative_cycles = 0;
 
 
@@ -112,20 +112,23 @@ extern "C" int cuda_bellman_ford_v1_1(Graph *graph, int source, int *dist, int t
     cudaMalloc((void **) &d_new_dist, sizeof(int) * graph->num_vertices);
 
     int **gpu_adjacency_matrix_ptrs_2_free = copy_graph_2_GPU(graph, d_graph);
-    cuda_initialize_distances<<<num_blocks, threads_per_block>>>(d_dist, d_graph, source);
     cudaMemcpy((void *)d_n_block_processed, (void *)&n_block_processed, sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy((void *)d_semaphore, (void *)&semaphore, sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_negative_cycles, &negative_cycles, sizeof(int), cudaMemcpyHostToDevice);
 
+    double start_time = omp_get_wtime();
+    cuda_initialize_distances<<<num_blocks, threads_per_block>>>(d_dist, d_graph, source);
+
 
     update_distances_1<<<num_blocks, threads_per_block>>>(group_size, d_dist, d_graph, d_new_dist,  d_candidate_dist,
                                                           d_n_block_processed, d_semaphore);
+    cudaDeviceSynchronize();
 
 
     detect_negative_cycle_1<<<num_blocks, threads_per_block>>>(d_dist, d_graph, d_negative_cycles, d_candidate_dist);
+    *kernels_time = omp_get_wtime() - start_time;
+
     cudaMemcpy(&negative_cycles, d_negative_cycles, sizeof(int), cudaMemcpyDeviceToHost);
-
-
     if(!negative_cycles)
         cudaMemcpy(dist, d_dist, sizeof(int) * graph->num_vertices, cudaMemcpyDeviceToHost);
 

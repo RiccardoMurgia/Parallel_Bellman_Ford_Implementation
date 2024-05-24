@@ -107,17 +107,23 @@ void check_differences(const int *serial, int **distances, const char **versions
 
 
 void write_results_in_txt(const char *file_name, const char **versions, const double *time_statistics, const int num_versions,
-                          const int n_cols, const  char *header_string) {
+                          const int n_cols, const  char *header_string, const int *additional_strings_components) {
     FILE *file = fopen(file_name, "w");
     if (file == NULL) {
         fprintf(stderr, "Error opening the file %s\n", file_name);
         return;
     }
 
+    int tmp ;
     fprintf(file, "Algorithm ");
     for (int i=0; i<(n_cols); i++) {
-        fprintf(file, "mean_%s%d ", header_string, i+1);
-        fprintf(file, "std_dev_%s%d ", header_string, i+1);
+      if (additional_strings_components == NULL)
+          tmp = i+1;
+      else
+          tmp = additional_strings_components[i];
+
+      fprintf(file, "mean_%s%d ", header_string, tmp);
+      fprintf(file, "std_dev_%s%d ", header_string, tmp);
     }
 
     for (int i=0; i<num_versions; i++) {

@@ -22,7 +22,7 @@ __global__ void cuda_parallel_relax_edges_0(int *d_dist, Graph *d_graph){
 }
 
 
-extern "C" int cuda_bellman_ford_v0(Graph *graph, int source, int *dist, int threads_per_block){
+extern "C" int cuda_bellman_ford_v0(Graph *graph, int source, int *dist, int threads_per_block, double *kernels_time){
     int num_blocks = (graph->num_edges + threads_per_block - 1) / threads_per_block;
     int negative_cycles = 0;
 
@@ -36,8 +36,11 @@ extern "C" int cuda_bellman_ford_v0(Graph *graph, int source, int *dist, int thr
 
 
     int **gpu_adjacency_matrix_ptrs_2_free = copy_graph_2_GPU(graph, d_graph);
-    cuda_initialize_distances<<<num_blocks, threads_per_block>>>(d_dist, d_graph, source);
     cudaMemcpy(d_negative_cycles, &negative_cycles, sizeof(int), cudaMemcpyHostToDevice);
+
+    double start_time = omp_get_wtime();
+    cuda_initialize_distances<<<num_blocks, threads_per_block>>>(d_dist, d_graph, source);
+    cudaDeviceSynchronize();
 
 
     for (int i = 0; i < graph->num_vertices - 1; i++){
@@ -47,6 +50,9 @@ extern "C" int cuda_bellman_ford_v0(Graph *graph, int source, int *dist, int thr
 
 
     detect_negative_cycle_0<<<num_blocks, threads_per_block>>>(d_dist, d_graph, d_negative_cycles);
+    cudaDeviceSynchronize();
+    *kernels_time = omp_get_wtime() - start_time;
+
     cudaMemcpy(&negative_cycles, d_negative_cycles, sizeof(int), cudaMemcpyDeviceToHost);
     if(!negative_cycles)
         cudaMemcpy(dist, d_dist, sizeof(int) * graph->num_vertices, cudaMemcpyDeviceToHost);

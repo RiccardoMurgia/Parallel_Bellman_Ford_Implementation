@@ -1,3 +1,13 @@
+#!/bin/bash
+#SBATCH --job-name=Parallel_Bellman_Ford_Implementation
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=riccardo.murgia2@studio.unibo.it
+#SBATCH --time=24:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --output=ProjectOut
+#SBATCH --gres=gpu:1
+
 if [ ! -d "obj" ]; then
     mkdir obj
 fi
@@ -15,11 +25,11 @@ gcc -c -fopenmp openmp_implementations/openmp_bellman_ford_V1_1.c -o obj/openmp_
 gcc -c -fopenmp openmp_implementations/openmp_bellman_ford_V2.c -o obj/openmp_bellman_ford_V2.o
 gcc -c -fopenmp openmp_implementations/openmp_bellman_ford_V2_1.c -o obj/openmp_bellman_ford_V2_1.o
 
-nvcc -c cuda_implementations/cuda_utilities.cu -o obj/cuda_utilities.o -arch=sm_80
-nvcc -c cuda_implementations/cuda_bellman_ford_V0.cu -o obj/cuda_bellman_ford_V0.o -arch=sm_80
-nvcc -c cuda_implementations/cuda_bellman_ford_V0_1.cu -o obj/cuda_bellman_ford_V0_1.o -arch=sm_80
-nvcc -c cuda_implementations/cuda_bellman_ford_V1.cu -o obj/cuda_bellman_ford_V1.o -arch=sm_80
-nvcc -c cuda_implementations/cuda_bellman_ford_V1_1.cu -o obj/cuda_bellman_ford_V1_1.o -arch=sm_80
+nvcc -c cuda_implementations/cuda_utilities.cu -o obj/cuda_utilities.o
+nvcc -c cuda_implementations/cuda_bellman_ford_V0.cu -o obj/cuda_bellman_ford_V0.o
+nvcc -c cuda_implementations/cuda_bellman_ford_V0_1.cu -o obj/cuda_bellman_ford_V0_1.o
+nvcc -c cuda_implementations/cuda_bellman_ford_V1.cu -o obj/cuda_bellman_ford_V1.o
+nvcc -c cuda_implementations/cuda_bellman_ford_V1_1.cu -o obj/cuda_bellman_ford_V1_1.o
 
 gcc -fopenmp obj/general_utilities.o obj/graph_generator.o obj/bellman_ford_Sq.o \
     obj/openmp_utilities.o obj/openmp_bellman_ford_V0.o obj/openmp_bellman_ford_V0_1.o obj/openmp_bellman_ford_V1.o \

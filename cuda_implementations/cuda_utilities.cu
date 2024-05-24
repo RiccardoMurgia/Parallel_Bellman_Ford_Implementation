@@ -21,11 +21,10 @@ __global__ void get_graph_device_pointers(Graph *d_graph, int **nodes, Edge **ed
 }
 
 
-__global__ void cuda_initialize_distances(int *d_dist, Graph *d_graph, const int d_source){
+__global__ void cuda_initialize_distances(int *d_dist, Graph *d_graph, const int d_source) {
     unsigned int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
     if (tid < d_graph->num_vertices)
         d_dist[tid] = (tid == d_source) ? 0 : INT_MAX - d_graph->maximum_weight;
-
 }
 
 
@@ -52,9 +51,6 @@ __global__ void detect_negative_cycle_0(const int *d_dist, Graph *d_graph, int *
 
     if (cycle_detected && threadIdx.x == 0)
         atomicExch(negative_cycle_flag, 1);
-
-    if (cycle_detected)
-        return;
 
 }
 

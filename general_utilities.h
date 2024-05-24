@@ -26,6 +26,6 @@ void print_version_results(const char *version_name, int *distances, int num_ver
 void print_time_matrix(const char *versions[], double time_matrix[], int number_of_version, int number_of_test);
 void print_statistics(const char *versions[], double time_matrix[], int number_of_version, int number_of_test);
 void check_differences(const int *serial, int **distances, const char **versions, int numArrays, int length);
-void write_results_in_txt(const char *file_name, const char **versions, const double *time_statistics, int num_versions, int n_cols, const  char *header_string);
+void write_results_in_txt(const char *file_name, const char **versions, const double *time_statistics, int num_versions, int n_cols, const  char *header_string, const int *additional_strings_components);
 
 #endif
