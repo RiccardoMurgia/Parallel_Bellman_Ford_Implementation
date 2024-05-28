@@ -2,7 +2,7 @@
 #SBATCH --job-name=Parallel_Bellman_Ford_Implementation
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=riccardo.murgia2@studio.unibo.it
-#SBATCH --time=24:00:00
+#SBATCH --time=62:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=4
 #SBATCH --output=ProjectOut
