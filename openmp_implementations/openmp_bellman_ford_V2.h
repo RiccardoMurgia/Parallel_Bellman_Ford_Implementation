@@ -15,7 +15,7 @@
 #include "openmp_utilities.h"
 
 
-int bellman_ford_v2(Graph *graph, int source, int *dist);
+int bellman_ford_v2(Graph *graph, int source, int *dist, int *predecessor);
 
 
 #endif //PARALLEL_BELLMAN_FORD_IMPLEMENTATION_OPENMP_BELLMAN_FORD_V2_H

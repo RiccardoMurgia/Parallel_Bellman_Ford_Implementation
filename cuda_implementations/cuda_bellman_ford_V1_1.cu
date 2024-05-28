@@ -27,7 +27,7 @@ __device__ MinResult d_find_min_value_1(const int *array, int num_vertices, unsi
 }
 
 
-__global__ void update_distances_1(int d_group_size, int *d_dist, Graph *d_graph, int *d_new_dist, int *d_candidate_dist,
+__global__ void update_distances_1(int d_group_size, int *d_dist, int *d_predecessor, Graph *d_graph, int *d_new_dist, int *d_candidate_dist,
                                    volatile int *d_n_block_processed, volatile int *d_semaphore) {
     unsigned int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
     unsigned int num_blocks = gridDim.x;
@@ -74,7 +74,7 @@ __global__ void update_distances_1(int d_group_size, int *d_dist, Graph *d_graph
 }
 
 
-extern "C" int cuda_bellman_ford_v1_1(Graph *graph, int source, int *dist, int threads_per_block, double  *kernels_time){
+extern "C" int cuda_bellman_ford_v1_1(Graph *graph, int source, int *dist, int *predecessor, int threads_per_block, double  *kernels_time){
     int negative_cycles = 0;
 
 
@@ -96,6 +96,7 @@ extern "C" int cuda_bellman_ford_v1_1(Graph *graph, int source, int *dist, int t
     int semaphore = 1;
 
     int *d_dist = nullptr;
+    int *d_predecessor = nullptr;
     Graph *d_graph = nullptr;
     volatile int *d_n_block_processed = nullptr;
     volatile int *d_semaphore = nullptr;
@@ -104,6 +105,7 @@ extern "C" int cuda_bellman_ford_v1_1(Graph *graph, int source, int *dist, int t
     int *d_new_dist = nullptr;
 
     cudaMalloc((void **) &d_dist, sizeof(int) * graph->num_vertices);
+    cudaMalloc((void **) &d_predecessor, sizeof(int) * graph->num_vertices);
     cudaMalloc((void **) &d_graph, sizeof(Graph));
     cudaMalloc((void **) &d_n_block_processed, sizeof(int));
     cudaMalloc((void **) &d_semaphore, sizeof(int));
@@ -120,7 +122,7 @@ extern "C" int cuda_bellman_ford_v1_1(Graph *graph, int source, int *dist, int t
     cuda_initialize_distances<<<num_blocks, threads_per_block>>>(d_dist, d_graph, source);
 
 
-    update_distances_1<<<num_blocks, threads_per_block>>>(group_size, d_dist, d_graph, d_new_dist,  d_candidate_dist,
+    update_distances_1<<<num_blocks, threads_per_block>>>(group_size, d_dist, d_predecessor, d_graph, d_new_dist,  d_candidate_dist,
                                                           d_n_block_processed, d_semaphore);
     cudaDeviceSynchronize();
 
@@ -129,13 +131,15 @@ extern "C" int cuda_bellman_ford_v1_1(Graph *graph, int source, int *dist, int t
     *kernels_time = omp_get_wtime() - start_time;
 
     cudaMemcpy(&negative_cycles, d_negative_cycles, sizeof(int), cudaMemcpyDeviceToHost);
-    if(!negative_cycles)
+    if(!negative_cycles) {
         cudaMemcpy(dist, d_dist, sizeof(int) * graph->num_vertices, cudaMemcpyDeviceToHost);
-
+        cudaMemcpy(predecessor, d_predecessor, sizeof(int) * graph->num_vertices, cudaMemcpyDeviceToHost);
+    }
 
     cudaFree(d_new_dist);
 
     cudaFree(d_dist);
+    cudaFree(d_predecessor);
     freeGraph(d_graph, gpu_adjacency_matrix_ptrs_2_free, graph->num_vertices);
     cudaFree(d_negative_cycles);
     cudaFree(d_candidate_dist);

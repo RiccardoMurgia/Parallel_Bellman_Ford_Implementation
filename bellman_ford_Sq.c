@@ -13,7 +13,7 @@ void initialize_distances(int *distances, int num_vertices, int source, int maxi
 }
 
 
-void serial_relax_edges(int *dist, Edge *edges, int num_edges, int num_vertices){
+void serial_relax_edges(int *dist, int *predecessor, Edge *edges, int num_edges, int num_vertices){
     int *new_dist = (int*) malloc(num_vertices * sizeof(int));
     memcpy(new_dist, dist, num_vertices * sizeof(int));
 
@@ -22,20 +22,21 @@ void serial_relax_edges(int *dist, Edge *edges, int num_edges, int num_vertices)
         int end = edges[i].end;
         int weight = edges[i].weight;
 
-        if (dist[origin] + weight < new_dist[end])
+        if (dist[origin] + weight < new_dist[end]) {
             new_dist[end] = dist[origin] + weight;
+            predecessor[end] = origin;
+        }
     }
     memcpy(dist, new_dist, num_vertices * sizeof(int));
 
 }
 
 
-int bellman_ford_serial(Graph *graph, int source, int *distances){
+int bellman_ford_serial(Graph *graph, int source, int *distances, int *predecessor){
     initialize_distances(distances, graph->num_vertices, source, graph->maximum_weight);
 
-    for (int i = 0; i < graph->num_vertices - 1; i++){
-        serial_relax_edges(distances, graph->edges, graph->num_edges, graph->num_vertices);
-    }
+    for (int i = 0; i < graph->num_vertices - 1; i++)
+        serial_relax_edges(distances, predecessor, graph->edges, graph->num_edges, graph->num_vertices);
 
     for (int i = 0; i < graph->num_edges; i++){
         int origin = graph->edges[i].origin;

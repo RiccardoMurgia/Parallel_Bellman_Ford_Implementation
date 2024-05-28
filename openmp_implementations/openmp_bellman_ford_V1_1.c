@@ -6,12 +6,12 @@
 
 
 
-int bellman_ford_v1_1(Graph *graph, int source, int *dist){
+int bellman_ford_v1_1(Graph *graph, int source, int *dist, int *predecessor){
     int negative_cycles = 0;
     int *new_dist = (int*) malloc(graph->num_vertices * sizeof(int));
     int *candidate_dist = (int*) malloc(graph->num_vertices * graph->num_vertices * sizeof(int));
 
-    #pragma omp parallel default(none) shared(graph, dist, new_dist, negative_cycles) firstprivate(source, candidate_dist)
+    #pragma omp parallel default(none) shared(graph, dist, new_dist, predecessor, negative_cycles) firstprivate(source, candidate_dist)
     {
         parallel_initialize_distances_1(dist, graph->num_vertices, source, graph->maximum_weight);
 
@@ -24,8 +24,10 @@ int bellman_ford_v1_1(Graph *graph, int source, int *dist){
 
                 MinResult min_candidate_dist = find_min_value(&candidate_dist[v * graph->num_vertices], graph->num_vertices);
 
-                if (min_candidate_dist.value < dist[v])
+                if (min_candidate_dist.value < dist[v]) {
                     new_dist[v] = min_candidate_dist.value;
+                    predecessor[v] = min_candidate_dist.index;
+                }
                 else
                     new_dist[v] = dist[v];
             }

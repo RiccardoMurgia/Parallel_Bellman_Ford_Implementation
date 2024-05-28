@@ -16,7 +16,7 @@
 
 
 
-int bellman_ford_v1(Graph *graph, int source, int *dist);
+int bellman_ford_v1(Graph *graph, int source, int *dist, int *predecessor);
 
 
 #endif

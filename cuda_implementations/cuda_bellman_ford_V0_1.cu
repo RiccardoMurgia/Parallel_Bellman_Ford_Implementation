@@ -8,7 +8,7 @@
 
 
 
-__global__ void cuda_parallel_relax_edges_1(int d_group_size,  int *d_dist, Graph *d_graph,
+__global__ void cuda_parallel_relax_edges_1(int d_group_size,  int *d_dist, int *d_predecessor, Graph *d_graph,
                                             volatile int *d_n_block_processed, volatile int *d_semaphore){
     unsigned int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
     unsigned int num_blocks = gridDim.x;
@@ -22,7 +22,11 @@ __global__ void cuda_parallel_relax_edges_1(int d_group_size,  int *d_dist, Grap
                 int end = d_graph->edges[g_index].end;
                 int weight = d_graph->edges[g_index].weight;
 
-                atomicMin(&d_dist[end], d_dist[origin] + weight);
+                int new_dist = d_dist[origin] + weight;
+                int old_dist = atomicMin(&d_dist[end], new_dist);
+                if (new_dist < old_dist)
+                    atomicExch(&d_predecessor[end], origin);
+
             }
         }
         __syncthreads();
@@ -41,7 +45,7 @@ __global__ void cuda_parallel_relax_edges_1(int d_group_size,  int *d_dist, Grap
 }
 
 
-extern "C" int cuda_bellman_ford_v0_1(Graph *graph, int source, int *dist, int threads_per_block, double *kernels_time){
+extern "C" int cuda_bellman_ford_v0_1(Graph *graph, int source, int *dist, int *predecessor, int threads_per_block, double *kernels_time){
     int negative_cycles = 0;
 
 
@@ -58,17 +62,18 @@ extern "C" int cuda_bellman_ford_v0_1(Graph *graph, int source, int *dist, int t
         num_blocks = (total_n_threads + threads_per_block - 1) / threads_per_block;
     }
 
-
     int n_block_processed = 0;
     int semaphore = 1;
 
     int *d_dist = nullptr;
+    int *d_predecessor = nullptr;
     Graph *d_graph = nullptr;
     volatile int *d_n_block_processed = nullptr;
     volatile int *d_semaphore = nullptr;
     int *d_negative_cycles = nullptr;
 
     cudaMalloc((void **) &d_dist, sizeof(int) * graph->num_vertices);
+    cudaMalloc((void **) &d_predecessor, sizeof(int) * graph->num_vertices);
     cudaMalloc((void **) &d_graph, sizeof(Graph));
     cudaMalloc((void **) &d_n_block_processed, sizeof(int));
     cudaMalloc((void **) &d_semaphore, sizeof(int));
@@ -84,7 +89,7 @@ extern "C" int cuda_bellman_ford_v0_1(Graph *graph, int source, int *dist, int t
     cudaDeviceSynchronize();
 
 
-    cuda_parallel_relax_edges_1<<<num_blocks, threads_per_block>>>(group_size, d_dist, d_graph, d_n_block_processed, d_semaphore);
+    cuda_parallel_relax_edges_1<<<num_blocks, threads_per_block>>>(group_size, d_dist, d_predecessor, d_graph, d_n_block_processed, d_semaphore);
     cudaDeviceSynchronize();
 
 
@@ -94,11 +99,13 @@ extern "C" int cuda_bellman_ford_v0_1(Graph *graph, int source, int *dist, int t
 
 
     cudaMemcpy(&negative_cycles, d_negative_cycles, sizeof(int), cudaMemcpyDeviceToHost);
-    if(!negative_cycles)
+    if(!negative_cycles) {
         cudaMemcpy(dist, d_dist, sizeof(int) * graph->num_vertices, cudaMemcpyDeviceToHost);
-
+        cudaMemcpy(predecessor, d_predecessor, sizeof(int) * graph->num_vertices, cudaMemcpyDeviceToHost);
+    }
 
     cudaFree(d_dist);
+    cudaFree(d_predecessor);
     freeGraph(d_graph, gpu_adjacency_matrix_ptrs_2_free, graph->num_vertices);
     cudaFree((int *) d_semaphore);
     cudaFree((int *) d_n_block_processed);

@@ -56,9 +56,15 @@ __global__ void detect_negative_cycle_0(const int *d_dist, Graph *d_graph, int *
 
 
 __global__ void detect_negative_cycle_1(const int *d_dist, Graph *d_graph, int *negative_cycle_flag, int *d_candidate_dist){
+    __shared__ bool cycle_detected;
     unsigned int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 
-    if (*negative_cycle_flag == 0  && tid < d_graph->num_vertices) {
+    if (threadIdx.x == 0)
+        cycle_detected = false;
+
+    __syncthreads();
+
+    if (!cycle_detected  && tid < d_graph->num_vertices) {
 
         for (int u = 0; u < d_graph->num_vertices; u++)
             d_candidate_dist[tid*d_graph->num_vertices+u] = d_dist[u] + d_graph->adjacency_matrix[u][tid];
@@ -75,7 +81,13 @@ __global__ void detect_negative_cycle_1(const int *d_dist, Graph *d_graph, int *
         }
 
         if (min_candidate_dist.value < d_dist[tid])
-            *negative_cycle_flag = 1;
+            cycle_detected = true;
+
+
+        __syncthreads();
+
+        if (cycle_detected && threadIdx.x == 0)
+            atomicExch(negative_cycle_flag, 1);
     }
 }
 

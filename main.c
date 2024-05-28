@@ -32,15 +32,22 @@ void open_mp_test_1(int num_vertices, int lower_bound, int upper_bound, int numb
 
 
     int *distances_sq = (int *) malloc(num_vertices * sizeof(int));
+    int *predecessor_sq = (int *) malloc(num_vertices * sizeof(int));
 
     int *openmp_distances_v0 = (int *) malloc(num_vertices * sizeof(int));
     int *openmp_distances_v0_1 = (int *) malloc(num_vertices * sizeof(int));
+    int *openmp_predecessor_v0 = (int *) malloc(num_vertices * sizeof(int));
+    int *openmp_predecessor_v0_1 = (int *) malloc(num_vertices * sizeof(int));
 
     int *openmp_distances_v1 = (int *) malloc(num_vertices * sizeof(int));
     int *openmp_distances_v1_1 = (int *) malloc(num_vertices * sizeof(int));
+    int *openmp_predecessor_v1 = (int *) malloc(num_vertices * sizeof(int));
+    int *openmp_predecessor_v1_1 = (int *) malloc(num_vertices * sizeof(int));
 
     int *openmp_distances_v2 = (int *) malloc(num_vertices * sizeof(int));
     int *openmp_distances_v2_1 = (int *) malloc(num_vertices * sizeof(int));
+    int *openmp_predecessor_v2 = (int *) malloc(num_vertices * sizeof(int));
+    int *openmp_predecessor_v2_1 = (int *) malloc(num_vertices * sizeof(int));
 
     int *parallel_distances[] = {openmp_distances_v0, openmp_distances_v0_1,
                                  openmp_distances_v1, openmp_distances_v1_1,
@@ -65,7 +72,7 @@ void open_mp_test_1(int num_vertices, int lower_bound, int upper_bound, int numb
 
             //Sequential Algorithm
             start_time_sq = omp_get_wtime();
-            int negative_cycles_bellman_ford_sq = bellman_ford_serial(&myGraph, source, distances_sq);
+            int negative_cycles_bellman_ford_sq = bellman_ford_serial(&myGraph, source, distances_sq, predecessor_sq);
             end_time_sq = omp_get_wtime();
             time_matrix[0 * number_of_test + test_id] = end_time_sq - start_time_sq;
 
@@ -73,13 +80,13 @@ void open_mp_test_1(int num_vertices, int lower_bound, int upper_bound, int numb
             //OPENMP Parallel version working on the arcs
             //Version that destroys creates threads at every relaxation
             openmp_start_time_v0 = omp_get_wtime();
-            bellman_ford_v0(&myGraph, source, openmp_distances_v0);
+            bellman_ford_v0(&myGraph, source, openmp_distances_v0, openmp_predecessor_v0);
             openmp_end_time_v0 = omp_get_wtime();
             time_matrix[1 * number_of_test + test_id] = openmp_end_time_v0 - openmp_start_time_v0;
 
             //Version that reuse threads
             openmp_start_time_v0_1 = omp_get_wtime();
-            bellman_ford_v0_1(&myGraph, source, openmp_distances_v0_1);
+            bellman_ford_v0_1(&myGraph, source, openmp_distances_v0_1, openmp_predecessor_v0_1);
             openmp_end_time_v0_1 = omp_get_wtime();
             time_matrix[2 * number_of_test + test_id] = openmp_end_time_v0_1 - openmp_start_time_v0_1;
 
@@ -87,13 +94,13 @@ void open_mp_test_1(int num_vertices, int lower_bound, int upper_bound, int numb
             //OPENMP Parallel version working on the nodes
             //Version that destroys creates threads at every relaxation
             openmp_start_time_v1 = omp_get_wtime();
-            bellman_ford_v1(&myGraph, source, openmp_distances_v1);
+            bellman_ford_v1(&myGraph, source, openmp_distances_v1, openmp_predecessor_v1);
             openmp_end_time_v1 = omp_get_wtime();
             time_matrix[3 * number_of_test + test_id] = openmp_end_time_v1 - openmp_start_time_v1;
 
             //Version that reuse threads
             openmp_start_time_v1_1 = omp_get_wtime();
-            bellman_ford_v1_1(&myGraph, source, openmp_distances_v1_1);
+            bellman_ford_v1_1(&myGraph, source, openmp_distances_v1_1, openmp_predecessor_v1_1);
             openmp_end_time_v1_1 = omp_get_wtime();
             time_matrix[4 * number_of_test + test_id] = openmp_end_time_v1_1 - openmp_start_time_v1_1;
 
@@ -101,13 +108,13 @@ void open_mp_test_1(int num_vertices, int lower_bound, int upper_bound, int numb
             //OPENMP Parallel version working on the nodes and parallelize also the minimum candidate search
             //Version that destroys creates threads at every relaxation
             openmp_start_time_v2 = omp_get_wtime();
-            bellman_ford_v2(&myGraph, source, openmp_distances_v2);
+            bellman_ford_v2(&myGraph, source, openmp_distances_v2, openmp_predecessor_v2);
             openmp_end_time_v2 = omp_get_wtime();
             time_matrix[5 * number_of_test + test_id] = openmp_end_time_v2 - openmp_start_time_v2;
 
             //Version that reuse threads at every relaxation
             openmp_start_time_v2_1 = omp_get_wtime();
-            bellman_ford_v2_1(&myGraph, source, openmp_distances_v2_1);
+            bellman_ford_v2_1(&myGraph, source, openmp_distances_v2_1, openmp_predecessor_v2_1);
             openmp_end_time_v2_1 = omp_get_wtime();
             time_matrix[6 * number_of_test + test_id] = openmp_end_time_v2_1 - openmp_start_time_v2_1;
 
@@ -125,25 +132,38 @@ void open_mp_test_1(int num_vertices, int lower_bound, int upper_bound, int numb
             time_statistics[algorithm_id * (maximum_n_thread * 2) + 2 * n_thread] = mean;
             time_statistics[algorithm_id*(maximum_n_thread * 2) + 2 * n_thread + 1] = std_dev;
         }
+
+        free(time_matrix);
+
     }
 
     write_results_in_txt("output1.txt", versions, time_statistics, number_of_versions, maximum_n_thread, "TH_", NULL);
 
     free(distances_sq);
+    free(predecessor_sq);
 
     free(openmp_distances_v0);
     free(openmp_distances_v0_1);
+    free(openmp_predecessor_v0);
+    free(openmp_predecessor_v0_1);
+
     free(openmp_distances_v1);
     free(openmp_distances_v1_1);
+    free(openmp_predecessor_v1);
+    free(openmp_predecessor_v1_1);
+
     free(openmp_distances_v2);
     free(openmp_distances_v2_1);
+    free(openmp_predecessor_v2);
+    free(openmp_predecessor_v2_1);
 
     free(time_statistics);
 
 }
 
 
-void open_mp_test_2(int initial_num_vertices, int lower_bound, int upper_bound, int number_of_test, int max_k, int source){
+void open_mp_test_2(int initial_num_vertices, int lower_bound, int upper_bound, int number_of_test,
+                    int max_k, int source){
 
     const char *versions[] = {"Sq", "V0", "V0_1", "V1", "V1_1", "V2", "V2_1"};
     int number_of_versions = sizeof(versions) / sizeof(versions[0]);
@@ -158,19 +178,25 @@ void open_mp_test_2(int initial_num_vertices, int lower_bound, int upper_bound, 
     for(int k=0; k<max_k; k++){
         omp_set_num_threads(k+1);
 
-        double work_load_increment_factor = cbrt(k+1);
-        int num_vertices = (int)round(work_load_increment_factor * initial_num_vertices);
+        int num_vertices = (k + 1) * initial_num_vertices;
 
         int *distances_sq = (int *) malloc(num_vertices * sizeof(int));
+        int *predecessor_sq = (int *) malloc(num_vertices * sizeof(int));
 
         int *openmp_distances_v0 = (int *) malloc(num_vertices * sizeof(int));
         int *openmp_distances_v0_1 = (int *) malloc(num_vertices * sizeof(int));
+        int *openmp_predecessor_v0 = (int *) malloc(num_vertices * sizeof(int));
+        int *openmp_predecessor_v0_1 = (int *) malloc(num_vertices * sizeof(int));
 
         int *openmp_distances_v1 = (int *) malloc(num_vertices * sizeof(int));
         int *openmp_distances_v1_1 = (int *) malloc(num_vertices * sizeof(int));
+        int *openmp_predecessor_v1 = (int *) malloc(num_vertices * sizeof(int));
+        int *openmp_predecessor_v1_1 = (int *) malloc(num_vertices * sizeof(int));
 
         int *openmp_distances_v2 = (int *) malloc(num_vertices * sizeof(int));
         int *openmp_distances_v2_1 = (int *) malloc(num_vertices * sizeof(int));
+        int *openmp_predecessor_v2 = (int *) malloc(num_vertices * sizeof(int));
+        int *openmp_predecessor_v2_1 = (int *) malloc(num_vertices * sizeof(int));
 
         int *parallel_distances[] = {openmp_distances_v0, openmp_distances_v0_1,
                                      openmp_distances_v1, openmp_distances_v1_1,
@@ -186,7 +212,7 @@ void open_mp_test_2(int initial_num_vertices, int lower_bound, int upper_bound, 
 
             //Sequential Algorithm
             start_time_sq = omp_get_wtime();
-            int negative_cycles_bellman_ford_sq = bellman_ford_serial(&myGraph, source, distances_sq);
+            int negative_cycles_bellman_ford_sq = bellman_ford_serial(&myGraph, source, distances_sq, predecessor_sq);
             end_time_sq = omp_get_wtime();
             time_matrix[0 * number_of_test + test_id] = end_time_sq - start_time_sq;
 
@@ -194,13 +220,13 @@ void open_mp_test_2(int initial_num_vertices, int lower_bound, int upper_bound, 
             //OPENMP Parallel version working on the arcs
             //Version that destroys creates threads at every relaxation
             openmp_start_time_v0 = omp_get_wtime();
-            bellman_ford_v0(&myGraph, source, openmp_distances_v0);
+            bellman_ford_v0(&myGraph, source, openmp_distances_v0, openmp_predecessor_v0);
             openmp_end_time_v0 = omp_get_wtime();
             time_matrix[1 * number_of_test + test_id] = openmp_end_time_v0 - openmp_start_time_v0;
 
             //Version that reuse threads
             openmp_start_time_v0_1 = omp_get_wtime();
-            bellman_ford_v0_1(&myGraph, source, openmp_distances_v0_1);
+            bellman_ford_v0_1(&myGraph, source, openmp_distances_v0_1, openmp_predecessor_v0_1);
             openmp_end_time_v0_1 = omp_get_wtime();
             time_matrix[2 * number_of_test + test_id] = openmp_end_time_v0_1 - openmp_start_time_v0_1;
 
@@ -208,13 +234,13 @@ void open_mp_test_2(int initial_num_vertices, int lower_bound, int upper_bound, 
             //OPENMP Parallel version working on the nodes
             //Version that destroys creates threads at every relaxation
             openmp_start_time_v1 = omp_get_wtime();
-            bellman_ford_v1(&myGraph, source, openmp_distances_v1);
+            bellman_ford_v1(&myGraph, source, openmp_distances_v1, openmp_predecessor_v1);
             openmp_end_time_v1 = omp_get_wtime();
             time_matrix[3 * number_of_test + test_id] = openmp_end_time_v1 - openmp_start_time_v1;
 
             //Version that reuse threads
             openmp_start_time_v1_1 = omp_get_wtime();
-            bellman_ford_v1_1(&myGraph, source, openmp_distances_v1_1);
+            bellman_ford_v1_1(&myGraph, source, openmp_distances_v1_1, openmp_predecessor_v1_1);
             openmp_end_time_v1_1 = omp_get_wtime();
             time_matrix[4 * number_of_test + test_id] = openmp_end_time_v1_1 - openmp_start_time_v1_1;
 
@@ -222,13 +248,13 @@ void open_mp_test_2(int initial_num_vertices, int lower_bound, int upper_bound, 
             //OPENMP Parallel version working on the nodes and parallelize also the minimum candidate search
             //Version that destroys creates threads at every relaxation
             openmp_start_time_v2 = omp_get_wtime();
-            bellman_ford_v2(&myGraph, source, openmp_distances_v2);
+            bellman_ford_v2(&myGraph, source, openmp_distances_v2, openmp_predecessor_v2);
             openmp_end_time_v2 = omp_get_wtime();
             time_matrix[5 * number_of_test + test_id] = openmp_end_time_v2 - openmp_start_time_v2;
 
             //Version that reuse threads at every relaxation
             openmp_start_time_v2_1 = omp_get_wtime();
-            bellman_ford_v2_1(&myGraph, source, openmp_distances_v2_1);
+            bellman_ford_v2_1(&myGraph, source, openmp_distances_v2_1, openmp_predecessor_v2_1);
             openmp_end_time_v2_1 = omp_get_wtime();
             time_matrix[6 * number_of_test + test_id] = openmp_end_time_v2_1 - openmp_start_time_v2_1;
 
@@ -250,12 +276,23 @@ void open_mp_test_2(int initial_num_vertices, int lower_bound, int upper_bound, 
 
 
         free(distances_sq);
+        free(predecessor_sq);
+
         free(openmp_distances_v0);
         free(openmp_distances_v0_1);
+        free(openmp_predecessor_v0);
+        free(openmp_predecessor_v0_1);
+
         free(openmp_distances_v1);
         free(openmp_distances_v1_1);
+        free(openmp_predecessor_v1);
+        free(openmp_predecessor_v1_1);
+
         free(openmp_distances_v2);
         free(openmp_distances_v2_1);
+        free(openmp_predecessor_v2);
+        free(openmp_predecessor_v2_1);
+
         free(time_matrix);
 
     }
@@ -267,7 +304,8 @@ void open_mp_test_2(int initial_num_vertices, int lower_bound, int upper_bound, 
 }
 
 
-void open_mp_vs_cuda_test(const int *sizes, int length, int lower_bound, int upper_bound, int number_of_test, int source, int open_mp_threads){
+void open_mp_vs_cuda_test(const int *sizes, int length, int lower_bound, int upper_bound, int number_of_test,
+                          int source, int open_mp_threads){
     int thread_per_block = 1024;
     const char *total_versions[] = {"Sq", "V0", "V0_1", "V1", "V1_1", "V2", "V2_1", "cuda_V0", "cuda_V0_1", "cuda_V1", "cuda_V1_1"};
     const char *cuda_versions[] = {"cuda_V0", "cuda_V0_1", "cuda_V1", "cuda_V1_1"};
@@ -284,21 +322,32 @@ void open_mp_vs_cuda_test(const int *sizes, int length, int lower_bound, int upp
         omp_set_num_threads(open_mp_threads);
 
         int *distances_sq = (int *) malloc(sizes[s] * sizeof(int));
+        int *predecessor_sq = (int *) malloc(num_vertices * sizeof(int));
 
         int *openmp_distances_v0 = (int *) malloc(num_vertices * sizeof(int));
         int *openmp_distances_v0_1 = (int *) malloc(num_vertices * sizeof(int));
+        int *openmp_predecessor_v0 = (int *) malloc(num_vertices * sizeof(int));
+        int *openmp_predecessor_v0_1 = (int *) malloc(num_vertices * sizeof(int));
 
         int *openmp_distances_v1 = (int *) malloc(num_vertices * sizeof(int));
         int *openmp_distances_v1_1 = (int *) malloc(num_vertices * sizeof(int));
+        int *openmp_predecessor_v1 = (int *) malloc(num_vertices * sizeof(int));
+        int *openmp_predecessor_v1_1 = (int *) malloc(num_vertices * sizeof(int));
 
         int *openmp_distances_v2 = (int *) malloc(num_vertices * sizeof(int));
         int *openmp_distances_v2_1 = (int *) malloc(num_vertices * sizeof(int));
+        int *openmp_predecessor_v2 = (int *) malloc(num_vertices * sizeof(int));
+        int *openmp_predecessor_v2_1 = (int *) malloc(num_vertices * sizeof(int));
 
         int *cuda_distances_v0 = (int *) malloc(num_vertices * sizeof(int));
         int *cuda_distances_v0_1 = (int *) malloc(num_vertices * sizeof(int));
+        int *cuda_predecessor_v0 = (int *) malloc(num_vertices * sizeof(int));
+        int *cuda_predecessor_v0_1 = (int *) malloc(num_vertices * sizeof(int));
 
         int *cuda_distances_v1 = (int *) malloc(num_vertices * sizeof(int));
         int *cuda_distances_v1_1 = (int *) malloc(num_vertices * sizeof(int));
+        int *cuda_predecessor_v1 = (int *) malloc(num_vertices * sizeof(int));
+        int *cuda_predecessor_v1_1 = (int *) malloc(num_vertices * sizeof(int));
 
         int *parallel_distances[] = {openmp_distances_v0, openmp_distances_v0_1,
                                      openmp_distances_v1, openmp_distances_v1_1,
@@ -313,7 +362,7 @@ void open_mp_vs_cuda_test(const int *sizes, int length, int lower_bound, int upp
 
         double cuda_start_time_v0, cuda_end_time_v0, cuda_start_time_v1, cuda_end_time_v1;
         double cuda_start_time_v0_1, cuda_end_time_v0_1, cuda_start_time_v1_1, cuda_end_time_v1_1;
-        double  kernels_time_v0, kernels_time_v0_1, kernels_time_v1, kernels_time_v1_1;
+        double kernels_time_v0, kernels_time_v0_1, kernels_time_v1, kernels_time_v1_1;
 
 
         double *time_matrix = (double *) malloc(number_of_versions * number_of_test * sizeof(double));
@@ -327,7 +376,7 @@ void open_mp_vs_cuda_test(const int *sizes, int length, int lower_bound, int upp
 
             //Sequential Algorithm
             start_time_sq = omp_get_wtime();
-            int negative_cycles_bellman_ford_sq = bellman_ford_serial(&myGraph, source, distances_sq);
+            int negative_cycles_bellman_ford_sq = bellman_ford_serial(&myGraph, source, distances_sq, predecessor_sq);
             end_time_sq = omp_get_wtime();
             time_matrix[0 * number_of_test + test_id] = end_time_sq - start_time_sq;
 
@@ -335,13 +384,13 @@ void open_mp_vs_cuda_test(const int *sizes, int length, int lower_bound, int upp
             //OPENMP Parallel version working on the arcs
             //Version that destroys creates threads at every relaxation
             openmp_start_time_v0 = omp_get_wtime();
-            bellman_ford_v0(&myGraph, source, openmp_distances_v0);
+            bellman_ford_v0(&myGraph, source, openmp_distances_v0, openmp_predecessor_v0);
             openmp_end_time_v0 = omp_get_wtime();
             time_matrix[1 * number_of_test + test_id] = openmp_end_time_v0 - openmp_start_time_v0;
 
             //Version that reuse threads
             openmp_start_time_v0_1 = omp_get_wtime();
-            bellman_ford_v0_1(&myGraph, source, openmp_distances_v0_1);
+            bellman_ford_v0_1(&myGraph, source, openmp_distances_v0_1, openmp_predecessor_v0_1);
             openmp_end_time_v0_1 = omp_get_wtime();
             time_matrix[2 * number_of_test + test_id] = openmp_end_time_v0_1 - openmp_start_time_v0_1;
 
@@ -349,13 +398,13 @@ void open_mp_vs_cuda_test(const int *sizes, int length, int lower_bound, int upp
             //OPENMP Parallel version working on the nodes
             //Version that destroys creates threads at every relaxation
             openmp_start_time_v1 = omp_get_wtime();
-            bellman_ford_v1(&myGraph, source, openmp_distances_v1);
+            bellman_ford_v1(&myGraph, source, openmp_distances_v1, openmp_predecessor_v1);
             openmp_end_time_v1 = omp_get_wtime();
             time_matrix[3 * number_of_test + test_id] = openmp_end_time_v1 - openmp_start_time_v1;
 
             //Version that reuse threads
             openmp_start_time_v1_1 = omp_get_wtime();
-            bellman_ford_v1_1(&myGraph, source, openmp_distances_v1_1);
+            bellman_ford_v1_1(&myGraph, source, openmp_distances_v1_1, openmp_predecessor_v1_1);
             openmp_end_time_v1_1 = omp_get_wtime();
             time_matrix[4 * number_of_test + test_id] = openmp_end_time_v1_1 - openmp_start_time_v1_1;
 
@@ -363,13 +412,13 @@ void open_mp_vs_cuda_test(const int *sizes, int length, int lower_bound, int upp
             //OPENMP Parallel version working on the nodes and parallelize also the minimum candidate search
             //Version that destroys creates threads at every relaxation
             openmp_start_time_v2 = omp_get_wtime();
-            bellman_ford_v2(&myGraph, source, openmp_distances_v2);
+            bellman_ford_v2(&myGraph, source, openmp_distances_v2, openmp_predecessor_v2);
             openmp_end_time_v2 = omp_get_wtime();
             time_matrix[5 * number_of_test + test_id] = openmp_end_time_v2 - openmp_start_time_v2;
 
             //Version that reuse threads at every relaxation
             openmp_start_time_v2_1 = omp_get_wtime();
-            bellman_ford_v2_1(&myGraph, source, openmp_distances_v2_1);
+            bellman_ford_v2_1(&myGraph, source, openmp_distances_v2_1, openmp_predecessor_v2_1);
             openmp_end_time_v2_1 = omp_get_wtime();
             time_matrix[6 * number_of_test + test_id] = openmp_end_time_v2_1 - openmp_start_time_v2_1;
 
@@ -378,14 +427,14 @@ void open_mp_vs_cuda_test(const int *sizes, int length, int lower_bound, int upp
             //CUDA Parallel version working on the archs
             //Version that destroys creates threads at every relaxation
             cuda_start_time_v0 = omp_get_wtime();
-            cuda_bellman_ford_v0(&myGraph, source, cuda_distances_v0, thread_per_block, &kernels_time_v0);
+            cuda_bellman_ford_v0(&myGraph, source, cuda_distances_v0, cuda_predecessor_v0,thread_per_block, &kernels_time_v0);
             cuda_end_time_v0 = omp_get_wtime();
             time_matrix[7 * number_of_test + test_id] = cuda_end_time_v0 - cuda_start_time_v0;
             time_matrix_without_d_copy[0 * number_of_test + test_id] = kernels_time_v0;
 
             //Version that reuse threads
             cuda_start_time_v0_1 = omp_get_wtime();
-            cuda_bellman_ford_v0_1(&myGraph, source, cuda_distances_v0_1, thread_per_block, &kernels_time_v0_1);
+            cuda_bellman_ford_v0_1(&myGraph, source, cuda_distances_v0_1, cuda_predecessor_v0_1, thread_per_block, &kernels_time_v0_1);
             cuda_end_time_v0_1 = omp_get_wtime();
             time_matrix[8 * number_of_test + test_id] = cuda_end_time_v0_1 - cuda_start_time_v0_1;
             time_matrix_without_d_copy[1 * number_of_test + test_id] = kernels_time_v0_1;
@@ -394,7 +443,7 @@ void open_mp_vs_cuda_test(const int *sizes, int length, int lower_bound, int upp
             //CUDA Parallel version working on the nodes
             //Version that destroys creates threads at every relaxation
             cuda_start_time_v1 = omp_get_wtime();
-            cuda_bellman_ford_v1(&myGraph, source, cuda_distances_v1, thread_per_block, &kernels_time_v1);
+            cuda_bellman_ford_v1(&myGraph, source, cuda_distances_v1, cuda_predecessor_v1, thread_per_block, &kernels_time_v1);
             cuda_end_time_v1 = omp_get_wtime();
             time_matrix[9 * number_of_test + test_id] = cuda_end_time_v1 - cuda_start_time_v1;
             time_matrix_without_d_copy[2 * number_of_test + test_id] = kernels_time_v1;
@@ -402,7 +451,7 @@ void open_mp_vs_cuda_test(const int *sizes, int length, int lower_bound, int upp
 
             //Version that reuse threads
             cuda_start_time_v1_1 = omp_get_wtime();
-            cuda_bellman_ford_v1_1(&myGraph, source, cuda_distances_v1_1, thread_per_block, &kernels_time_v1_1);
+            cuda_bellman_ford_v1_1(&myGraph, source, cuda_distances_v1_1, cuda_predecessor_v1_1, thread_per_block, &kernels_time_v1_1);
             cuda_end_time_v1_1 = omp_get_wtime();
             time_matrix[10 * number_of_test + test_id] = cuda_end_time_v1_1 - cuda_start_time_v1_1;
             time_matrix_without_d_copy[3 * number_of_test + test_id] = kernels_time_v1_1;
@@ -432,12 +481,23 @@ void open_mp_vs_cuda_test(const int *sizes, int length, int lower_bound, int upp
 
 
         free(distances_sq);
+        free(predecessor_sq);
+
         free(openmp_distances_v0);
         free(openmp_distances_v0_1);
+        free(openmp_predecessor_v0);
+        free(openmp_predecessor_v0_1);
+
         free(openmp_distances_v1);
         free(openmp_distances_v1_1);
+        free(openmp_predecessor_v1);
+        free(openmp_predecessor_v1_1);
+
         free(openmp_distances_v2);
         free(openmp_distances_v2_1);
+        free(openmp_predecessor_v2);
+        free(openmp_predecessor_v2_1);
+
         free(time_matrix);
         free(time_matrix_without_d_copy);
 
@@ -518,21 +578,32 @@ int main(int argc, char *argv[]) {
         for (int test_id = 0; test_id < number_of_test; test_id++) {
 
             int *distances_sq = (int *) malloc(num_vertices * sizeof(int));
+            int *predecessor_sq = (int *) malloc(num_vertices * sizeof(int));
 
             int *openmp_distances_v0 = (int *) malloc(num_vertices * sizeof(int));
             int *openmp_distances_v0_1 = (int *) malloc(num_vertices * sizeof(int));
+            int *openmp_predecessor_v0 = (int *) malloc(num_vertices * sizeof(int));
+            int *openmp_predecessor_v0_1 = (int *) malloc(num_vertices * sizeof(int));
 
             int *openmp_distances_v1 = (int *) malloc(num_vertices * sizeof(int));
             int *openmp_distances_v1_1 = (int *) malloc(num_vertices * sizeof(int));
+            int *openmp_predecessor_v1 = (int *) malloc(num_vertices * sizeof(int));
+            int *openmp_predecessor_v1_1 = (int *) malloc(num_vertices * sizeof(int));
 
             int *openmp_distances_v2 = (int *) malloc(num_vertices * sizeof(int));
             int *openmp_distances_v2_1 = (int *) malloc(num_vertices * sizeof(int));
+            int *openmp_predecessor_v2 = (int *) malloc(num_vertices * sizeof(int));
+            int *openmp_predecessor_v2_1 = (int *) malloc(num_vertices * sizeof(int));
 
             int *cuda_distances_v0 = (int *) malloc(num_vertices * sizeof(int));
             int *cuda_distances_v0_1 = (int *) malloc(num_vertices * sizeof(int));
+            int *cuda_predecessor_v0 = (int *) malloc(num_vertices * sizeof(int));
+            int *cuda_predecessor_v0_1 = (int *) malloc(num_vertices * sizeof(int));
 
             int *cuda_distances_v1 = (int *) malloc(num_vertices * sizeof(int));
             int *cuda_distances_v1_1 = (int *) malloc(num_vertices * sizeof(int));
+            int *cuda_predecessor_v1 = (int *) malloc(num_vertices * sizeof(int));
+            int *cuda_predecessor_v1_1 = (int *) malloc(num_vertices * sizeof(int));
 
             int *parallel_distances[] = {openmp_distances_v0, openmp_distances_v0_1,
                                          openmp_distances_v1, openmp_distances_v1_1,
@@ -574,7 +645,7 @@ int main(int argc, char *argv[]) {
 
             //Sequential Algorithm
             start_time_sq = omp_get_wtime();
-            int negative_cycles_bellman_ford_sq = bellman_ford_serial(&myGraph, source, distances_sq);
+            int negative_cycles_bellman_ford_sq = bellman_ford_serial(&myGraph, source, distances_sq, predecessor_sq);
             end_time_sq = omp_get_wtime();
             time_matrix[0][test_id] = end_time_sq - start_time_sq;
 
@@ -582,13 +653,13 @@ int main(int argc, char *argv[]) {
             //OPENMP Parallel version working on the arcs
             //Version that destroys creates threads at every relaxation
             openmp_start_time_v0 = omp_get_wtime();
-            int negative_cycles_bellman_ford_v0 = bellman_ford_v0(&myGraph, source, openmp_distances_v0);
+            int negative_cycles_bellman_ford_v0 = bellman_ford_v0(&myGraph, source, openmp_distances_v0, openmp_predecessor_v0);
             openmp_end_time_v0 = omp_get_wtime();
             time_matrix[1][test_id] = openmp_end_time_v0 - openmp_start_time_v0;
 
             //Version that reuse threads
             openmp_start_time_v0_1 = omp_get_wtime();
-            int negative_cycles_bellman_ford_v0_1 = bellman_ford_v0_1(&myGraph, source, openmp_distances_v0_1);
+            int negative_cycles_bellman_ford_v0_1 = bellman_ford_v0_1(&myGraph, source, openmp_distances_v0_1, openmp_predecessor_v0_1);
             openmp_end_time_v0_1 = omp_get_wtime();
             time_matrix[2][test_id] = openmp_end_time_v0_1 - openmp_start_time_v0_1;
 
@@ -596,13 +667,13 @@ int main(int argc, char *argv[]) {
             //OPENMP Parallel version working on the nodes
             //Version that destroys creates threads at every relaxation
             openmp_start_time_v1 = omp_get_wtime();
-            int negative_cycles_bellman_ford_v1 = bellman_ford_v1(&myGraph, source, openmp_distances_v1);
+            int negative_cycles_bellman_ford_v1 = bellman_ford_v1(&myGraph, source, openmp_distances_v1, openmp_predecessor_v1);
             openmp_end_time_v1 = omp_get_wtime();
             time_matrix[3][test_id] = openmp_end_time_v1 - openmp_start_time_v1;
 
             //Version that reuse threads
             openmp_start_time_v1_1 = omp_get_wtime();
-            int negative_cycles_bellman_ford_v1_1 = bellman_ford_v1_1(&myGraph, source, openmp_distances_v1_1);
+            int negative_cycles_bellman_ford_v1_1 = bellman_ford_v1_1(&myGraph, source, openmp_distances_v1_1, openmp_predecessor_v1_1);
             openmp_end_time_v1_1 = omp_get_wtime();
             time_matrix[4][test_id] = openmp_end_time_v1_1 - openmp_start_time_v1_1;
 
@@ -610,13 +681,13 @@ int main(int argc, char *argv[]) {
             //OPENMP Parallel version working on the nodes and parallelize also the minimum candidate search
             //Version that destroys creates threads at every relaxation
             openmp_start_time_v2 = omp_get_wtime();
-            int negative_cycles_bellman_ford_v2 = bellman_ford_v2(&myGraph, source, openmp_distances_v2);
+            int negative_cycles_bellman_ford_v2 = bellman_ford_v2(&myGraph, source, openmp_distances_v2, openmp_predecessor_v2);
             openmp_end_time_v2 = omp_get_wtime();
             time_matrix[5][test_id] = openmp_end_time_v2 - openmp_start_time_v2;
 
             //Version that reuse threads at every relaxation
             openmp_start_time_v2_1 = omp_get_wtime();
-            int negative_cycles_bellman_ford_v2_1 = bellman_ford_v2_1(&myGraph, source, openmp_distances_v2_1);
+            int negative_cycles_bellman_ford_v2_1 = bellman_ford_v2_1(&myGraph, source, openmp_distances_v2_1, openmp_predecessor_v2_1);
             openmp_end_time_v2_1 = omp_get_wtime();
             time_matrix[6][test_id] = openmp_end_time_v2_1 - openmp_start_time_v2_1;
 
@@ -626,7 +697,8 @@ int main(int argc, char *argv[]) {
             //Version that destroys creates threads at every relaxation
             cuda_start_time_v0 = omp_get_wtime();
             int cuda_negative_cycles_bellman_ford_v0 = cuda_bellman_ford_v0(&myGraph, source, cuda_distances_v0,
-                                                                            thread_per_block, &kernels_time_v0);
+                                                                            cuda_predecessor_v0, thread_per_block,
+                                                                            &kernels_time_v0);
             cuda_end_time_v0 = omp_get_wtime();
             time_matrix[7][test_id] = cuda_end_time_v0 - cuda_start_time_v0;
             time_matrix_without_d_copy[0][test_id] = kernels_time_v0;
@@ -634,7 +706,8 @@ int main(int argc, char *argv[]) {
             //Version that reuse threads
             cuda_start_time_v0_1 = omp_get_wtime();
             int cuda_negative_cycles_bellman_ford_v0_1 = cuda_bellman_ford_v0_1(&myGraph, source, cuda_distances_v0_1,
-                                                                               thread_per_block, &kernels_time_v0_1);
+                                                                                cuda_predecessor_v0_1, thread_per_block,
+                                                                                &kernels_time_v0_1);
             cuda_end_time_v0_1 = omp_get_wtime();
             time_matrix[8][test_id] = cuda_end_time_v0_1 - cuda_start_time_v0_1;
             time_matrix_without_d_copy[1][test_id] = kernels_time_v0_1;
@@ -643,7 +716,8 @@ int main(int argc, char *argv[]) {
             //Version that destroys creates threads at every relaxation
             cuda_start_time_v1 = omp_get_wtime();
             int cuda_negative_cycles_bellman_ford_v1 = cuda_bellman_ford_v1(&myGraph, source, cuda_distances_v1,
-                                                                           thread_per_block, &kernels_time_v1);
+                                                                            cuda_predecessor_v1, thread_per_block,
+                                                                            &kernels_time_v1);
             cuda_end_time_v1 = omp_get_wtime();
             time_matrix[9][test_id] = cuda_end_time_v1 - cuda_start_time_v1;
             time_matrix_without_d_copy[2][test_id] = kernels_time_v1;
@@ -651,7 +725,8 @@ int main(int argc, char *argv[]) {
             //Version that reuse threads
             cuda_start_time_v1_1 = omp_get_wtime();
             int cuda_negative_cycles_bellman_ford_v1_1 = cuda_bellman_ford_v1_1(&myGraph, source, cuda_distances_v1_1,
-                                                                                thread_per_block, &kernels_time_v1_1);
+                                                                                cuda_predecessor_v1_1, thread_per_block,
+                                                                                &kernels_time_v1_1);
             cuda_end_time_v1_1 = omp_get_wtime();
             time_matrix[10][test_id] = cuda_end_time_v1_1 - cuda_start_time_v1_1;
             time_matrix_without_d_copy[3][test_id] = kernels_time_v1_1;
@@ -691,18 +766,32 @@ int main(int argc, char *argv[]) {
                 check_differences(distances_sq, parallel_distances, all_versions, number_of_versions - 1, num_vertices);
 
             free(distances_sq);
+            free(predecessor_sq);
 
             free(openmp_distances_v0);
             free(openmp_distances_v0_1);
+            free(openmp_predecessor_v0);
+            free(openmp_predecessor_v0_1);
+
             free(openmp_distances_v1);
             free(openmp_distances_v1_1);
+            free(openmp_predecessor_v1);
+            free(openmp_predecessor_v1_1);
+
             free(openmp_distances_v2);
             free(openmp_distances_v2_1);
+            free(openmp_predecessor_v2);
+            free(openmp_predecessor_v2_1);
 
             free(cuda_distances_v0);
             free(cuda_distances_v0_1);
+            free(cuda_predecessor_v0);
+            free(cuda_predecessor_v0_1);
+
             free(cuda_distances_v1);
             free(cuda_distances_v1_1);
+            free(cuda_predecessor_v1);
+            free(cuda_predecessor_v1_1);
 
 
             free_graph(&myGraph);
@@ -722,9 +811,13 @@ int main(int argc, char *argv[]) {
 
     }
     else{
-        num_vertices = 1000, lower_bound = 1, upper_bound = 100, number_of_test = 3, source = 0;
-        int maximum_n_thread = 8, initial_num_vertices = 2000 , max_k = 8, best_n_thread=4;
-        int sizes[] = {100, 500, 1000, 2000, 5000, 10000};
+//        num_vertices = 1000, lower_bound = 1, upper_bound = 100, number_of_test = 3, source = 0;
+//        int maximum_n_thread = 8, initial_num_vertices = 2000 , max_k = 8, best_n_thread=4;
+//        int sizes[] = {100, 500, 1000, 2000, 5000, 10000};
+
+        num_vertices = 10, lower_bound = 1, upper_bound = 100, number_of_test = 2, source = 0;
+        int maximum_n_thread = 8, initial_num_vertices = 1000 , max_k = 1, best_n_thread=4;
+        int sizes[] = {2000};
 
         if(atoi(argv[2]) == 1)
             open_mp_test_1(num_vertices, lower_bound, upper_bound, number_of_test, maximum_n_thread, source);

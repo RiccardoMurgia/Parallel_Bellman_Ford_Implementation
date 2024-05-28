@@ -27,4 +27,4 @@ gcc -fopenmp obj/general_utilities.o obj/graph_generator.o obj/bellman_ford_Sq.o
     obj/cuda_utilities.o obj/cuda_bellman_ford_V0.o obj/cuda_bellman_ford_V0_1.o obj/cuda_bellman_ford_V1.o  \
     obj/cuda_bellman_ford_V1_1.o obj/main.o -o executable -lm -L/opt/cuda/lib64 -lcudart
 
-./executable 0 1 1 1
+./executable 0 0 0 1

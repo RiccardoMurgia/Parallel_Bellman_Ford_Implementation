@@ -15,5 +15,6 @@
 extern "C"
 #endif
 
-int cuda_bellman_ford_v0_1(Graph* graph, int source, int* dist, int threads_per_block, double  *kernels_time);
+int cuda_bellman_ford_v0_1(Graph* graph, int source, int *dist, int *predecessor,int threads_per_block, double *kernels_time);
+
 #endif //PARALLEL_BELLMAN_FORD_IMPLEMENTATION_CUDA_BELLMAN_FORD_V0_1_CUH
