@@ -178,7 +178,8 @@ void open_mp_test_2(int initial_num_vertices, int lower_bound, int upper_bound, 
     for(int k=0; k<max_k; k++){
         omp_set_num_threads(k+1);
 
-        int num_vertices = (k + 1) * initial_num_vertices;
+        int num_vertices = round(cbrt(k + 1) * initial_num_vertices);
+
 
         int *distances_sq = (int *) malloc(num_vertices * sizeof(int));
         int *predecessor_sq = (int *) malloc(num_vertices * sizeof(int));

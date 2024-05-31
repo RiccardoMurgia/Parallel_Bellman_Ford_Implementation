@@ -19,7 +19,7 @@ int bellman_ford_v2(Graph *graph, int source, int *dist, int *predecessor){
         #pragma omp parallel for default(none) shared(graph, dist, new_dist, predecessor) firstprivate(source, candidate_dist)
 
             for (int v = 0; v < graph->num_vertices; v++){
-
+                #pragma omp parallel for default(none) shared(graph, dist, new_dist, predecessor) firstprivate(source, candidate_dist, v)
                 for (int u = 0; u < graph->num_vertices; u++)
                     candidate_dist[v * graph->num_vertices + u] = dist[u] + graph->adjacency_matrix[u][v];
 
