@@ -13,13 +13,15 @@ int bellman_ford_v2(Graph *graph, int source, int *dist, int *predecessor){
     int *new_dist = (int*) malloc(graph->num_vertices * sizeof(int));
     int *candidate_dist = (int*) malloc(graph->num_vertices * graph->num_vertices * sizeof(int));
 
+    if (!omp_get_nested())
+        omp_set_nested(1);
 
     for (int i = 0; i < graph->num_vertices - 1; i++){
 
         #pragma omp parallel for default(none) shared(graph, dist, new_dist, predecessor) firstprivate(source, candidate_dist)
 
             for (int v = 0; v < graph->num_vertices; v++){
-                #pragma omp parallel for default(none) shared(graph, dist, new_dist, predecessor) firstprivate(source, candidate_dist, v)
+                #pragma omp parallel for default(none) shared(graph, dist, new_dist, predecessor) firstprivate(source, candidate_dist, v) num_threads(1)
                 for (int u = 0; u < graph->num_vertices; u++)
                     candidate_dist[v * graph->num_vertices + u] = dist[u] + graph->adjacency_matrix[u][v];
 

@@ -13,6 +13,7 @@
 
 #include "../graph_generator.h"
 #include "openmp_utilities.h"
+#include "omp.h"
 
 
 int bellman_ford_v2(Graph *graph, int source, int *dist, int *predecessor);

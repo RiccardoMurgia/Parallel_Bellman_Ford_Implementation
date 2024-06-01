@@ -541,8 +541,7 @@ int main(int argc, char *argv[]) {
     int number_of_cuda_versions = sizeof(cuda_versions) / sizeof(cuda_versions[0]);
 
     // Test using manual input
-    if (atoi(argv[1]) == 1){
-        omp_set_num_threads(14);
+    if (atoi(argv[1]) == 1){omp_set_num_threads(16);
         int thread_per_block = 1024;
 
         // Input parameters
@@ -812,8 +811,8 @@ int main(int argc, char *argv[]) {
 
     }
     else{
-        num_vertices = 1000, lower_bound = 1, upper_bound = 100, number_of_test = 3, source = 0;
-        int maximum_n_thread = 8, initial_num_vertices = 2000 , max_k = 8, best_n_thread = 4;
+        num_vertices = 1000, lower_bound = 1, upper_bound = 100, number_of_test = 10, source = 0;
+        int maximum_n_thread = 20, initial_num_vertices = 1000 , max_k = 8, best_n_thread = 4, number_of_test_throughput = 3;
         int sizes[] = {100, 500, 1000, 2000, 5000, 10000};
 
         if(atoi(argv[2]) == 1)
@@ -821,7 +820,7 @@ int main(int argc, char *argv[]) {
         if(atoi(argv[3]) == 1)
             open_mp_test_2(initial_num_vertices, lower_bound, upper_bound, number_of_test, max_k, source);
         if(atoi(argv[4]) == 1)
-            open_mp_vs_cuda_test(sizes, sizeof(sizes)/sizeof(int), lower_bound, upper_bound, number_of_test, source, best_n_thread);
+            open_mp_vs_cuda_test(sizes, sizeof(sizes)/sizeof(int), lower_bound, upper_bound, number_of_test_throughput, source, best_n_thread);
 
     }
 
