@@ -541,7 +541,8 @@ int main(int argc, char *argv[]) {
     int number_of_cuda_versions = sizeof(cuda_versions) / sizeof(cuda_versions[0]);
 
     // Test using manual input
-    if (atoi(argv[1]) == 1){omp_set_num_threads(16);
+    if (atoi(argv[1]) == 1){
+        omp_set_num_threads(16);
         int thread_per_block = 1024;
 
         // Input parameters

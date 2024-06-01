@@ -12,6 +12,8 @@ int bellman_ford_v2_1(Graph *graph, int source, int *dist, int *predecessor){
     int *new_dist = (int*) malloc(graph->num_vertices * sizeof(int));
     int *candidate_dist = (int*) malloc(graph->num_vertices * graph->num_vertices * sizeof(int));
 
+    if (!omp_get_nested())
+        omp_set_nested(1);
 
     #pragma omp parallel default(none) shared(graph, negative_cycles, dist, new_dist, predecessor) firstprivate(source, candidate_dist)
     {
