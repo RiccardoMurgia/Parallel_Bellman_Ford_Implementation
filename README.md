@@ -68,7 +68,7 @@ All the tests described above are aimed at collecting execution times, which are
 
 1. **Compile the Code**: Ensure you have the necessary compilers and libraries installed for CUDA and OpenMP.
 2. **Set the Flags**: Modify the flag settings in  my_bash.sbash to set the desired test flag.
-3. **Run the Project**: Execute the `my_bash.sbatch` script, which handles compiling the project and launching the executable.
+3. **Run the Project**: Execute the `my_bash.sh` script (or `sbatch sulurm.sbatch` if using SLURM), which handles compiling the project and launching the executable.
    - **Note**: Depending on the GPU architecture used, it might be necessary to specify the architecture and correctly set the path to the CUDA libraries.
 4. **View Results**: Execution times will be exported to text files, which can be processed by the provided Python script to generate performance graphs.
 
